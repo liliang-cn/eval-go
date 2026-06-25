@@ -1,0 +1,14 @@
+# build artifacts / reports
+eval-report.json
+*.out
+*.test
+
+# secrets / local env — never commit
+.env
+.env.*
+*.key
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/

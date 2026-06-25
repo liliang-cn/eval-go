@@ -1,0 +1,29 @@
+[
+  {
+    "name": "grounded-answer",
+    "input": "What is the savings account interest rate?",
+    "context": ["The savings account pays 0.30% annually for balances below 50000 and 0.55% above 50000."],
+    "output": "The savings rate is tiered: 0.30% below 50000 and 0.55% above 50000 [KB-001].",
+    "rubric": "States both interest tiers accurately and cites a source."
+  },
+  {
+    "name": "hallucinated-answer",
+    "input": "What is the savings account interest rate?",
+    "context": ["The savings account pays 0.30% annually for balances below 50000 and 0.55% above 50000."],
+    "output": "The savings account pays a flat 1.5% interest rate for all balances [KB-001].",
+    "rubric": "States the interest rate accurately per the context."
+  },
+  {
+    "name": "irrelevant-answer",
+    "input": "What is the savings account interest rate?",
+    "context": ["The savings account pays 0.30% annually for balances below 50000 and 0.55% above 50000."],
+    "output": "Debit cards must be activated within 90 days of issue [KB-002].",
+    "rubric": "Directly answers the interest-rate question."
+  },
+  {
+    "name": "valid-json-output",
+    "input": "Return a user profile for Jane Doe as JSON with name and age.",
+    "output": "{\"name\":\"Jane Doe\",\"age\":30}",
+    "rubric": "Returns a JSON object with name and age, no chatter."
+  }
+]
