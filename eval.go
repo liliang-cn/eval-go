@@ -20,14 +20,42 @@ import (
 )
 
 // Sample is one row of a golden dataset plus the system's actual output.
+//
+// The first block of fields describes a single-turn output (RAG / generation).
+// The agent block records what an agent actually did during a run — Eval-Go
+// evaluates that recorded trajectory rather than instrumenting a live runtime,
+// so any framework (or none) can emit these fields and be scored the same way.
 type Sample struct {
 	Name     string            `json:"name"`               // unique-ish label for reports
-	Input    string            `json:"input"`              // the question / prompt given to the system
+	Input    string            `json:"input"`              // the question / prompt / task given to the system
 	Output   string            `json:"output"`             // the actual answer produced by the system under test
 	Expected string            `json:"expected,omitempty"` // optional reference answer (for ExactMatch etc.)
 	Context  []string          `json:"context,omitempty"`  // retrieved evidence chunks (for RAG metrics)
 	Rubric   string            `json:"rubric,omitempty"`   // pass/fail criterion for a rubric judge
 	Meta     map[string]string `json:"meta,omitempty"`     // free-form labels carried into reports
+
+	// --- agent execution (recorded from an agent run; for agentic metrics) ---
+	Plan          string     `json:"plan,omitempty"`           // the agent's stated plan (for plan_quality / plan_adherence)
+	Trajectory    []string   `json:"trajectory,omitempty"`     // ordered reasoning/action steps the agent took
+	ToolCalls     []ToolCall `json:"tool_calls,omitempty"`     // tools the agent actually invoked, in order
+	ExpectedTools []string   `json:"expected_tools,omitempty"` // ground-truth tool names (for tool_correctness)
+
+	// --- multi-turn conversation (for conversational metrics) ---
+	Turns   []Turn `json:"turns,omitempty"`   // the full chat history, in order
+	Persona string `json:"persona,omitempty"` // the role the assistant should hold (for role_adherence)
+}
+
+// Turn is one message in a multi-turn conversation.
+type Turn struct {
+	Role    string `json:"role"`    // "user" or "assistant"
+	Content string `json:"content"` // the message text
+}
+
+// ToolCall is one tool invocation recorded from an agent run.
+type ToolCall struct {
+	Name   string         `json:"name"`             // tool / function name invoked
+	Args   map[string]any `json:"args,omitempty"`   // arguments the agent passed
+	Output string         `json:"output,omitempty"` // tool result, if captured (helps the judge)
 }
 
 // Result is the outcome of one metric on one sample. Score is normalized 0..1.

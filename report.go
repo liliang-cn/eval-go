@@ -18,6 +18,7 @@ type SampleReport struct {
 // Report is the full outcome of a Suite run.
 type Report struct {
 	Samples []SampleReport `json:"samples"`
+	Usage   *Usage         `json:"usage,omitempty"` // judge usage, when metered (set by the caller)
 }
 
 // Failed reports whether any sample failed any metric — use as the CI exit gate.
@@ -37,8 +38,9 @@ func (r Report) WriteJSON(w io.Writer) error {
 	return enc.Encode(struct {
 		Samples []SampleReport  `json:"samples"`
 		Summary []MetricSummary `json:"summary"`
+		Usage   *Usage          `json:"usage,omitempty"`
 		Failed  bool            `json:"failed"`
-	}{r.Samples, r.Summary(), r.Failed()})
+	}{r.Samples, r.Summary(), r.Usage, r.Failed()})
 }
 
 // WriteConsole emits a human-readable report: per-sample metric grid + per-metric
@@ -72,6 +74,16 @@ func (r Report) WriteConsole(w io.Writer) {
 		fmt.Fprintf(w, "%-24s %-12s %.2f\n", ms.Metric,
 			fmt.Sprintf("%d/%d (%.0f%%)", ms.Passed, ms.Total, ms.PassRate*100), ms.MeanScore)
 	}
+	if u := r.Usage; u != nil {
+		fmt.Fprintln(w, "\n--- judge usage ---")
+		fmt.Fprintf(w, "calls         : %d\n", u.Calls)
+		fmt.Fprintf(w, "est. tokens   : %d prompt + %d completion = %d\n", u.PromptTokens, u.CompletionTokens, u.TotalTokens)
+		fmt.Fprintf(w, "judge time    : %.1fs (cumulative)\n", u.JudgeSeconds)
+		if u.Cost > 0 {
+			fmt.Fprintf(w, "est. cost     : $%.4f\n", u.Cost)
+		}
+	}
+
 	overall := "ALL PASSED ✅"
 	if r.Failed() {
 		overall = "FAILURES PRESENT ❌"

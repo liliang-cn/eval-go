@@ -1,4 +1,5 @@
 # build artifacts / reports
+/evalgo
 eval-report.json
 *.out
 *.test

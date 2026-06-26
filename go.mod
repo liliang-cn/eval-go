@@ -2,7 +2,10 @@ module github.com/liliang-cn/eval-go
 
 go 1.25.0
 
-require github.com/liliang-cn/agent-go/v2 v2.92.0
+require (
+	github.com/liliang-cn/agent-go/v2 v2.92.0
+	github.com/spf13/cobra v1.10.2
+)
 
 require (
 	github.com/0x51-dev/rdf v0.1.0 // indirect
@@ -39,6 +42,7 @@ require (
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/liliang-cn/cortexdb/v2 v2.24.1 // indirect
 	github.com/liliang-cn/mcp-swagger-server v0.4.0 // indirect
 	github.com/liliang-cn/pipeit v0.1.0 // indirect
@@ -53,6 +57,7 @@ require (
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/segmentio/encoding v0.5.4 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

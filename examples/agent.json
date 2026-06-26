@@ -1,0 +1,53 @@
+[
+  {
+    "name": "weather-agent-good",
+    "input": "What's the weather in Tokyo tomorrow? Convert the high to Fahrenheit.",
+    "plan": "1) geocode Tokyo, 2) fetch tomorrow's forecast, 3) convert the high from C to F, 4) report.",
+    "trajectory": [
+      "Called geocode for Tokyo to get coordinates",
+      "Called weather forecast for those coordinates, tomorrow",
+      "Converted high of 24C to 75.2F",
+      "Reported the forecast and converted high"
+    ],
+    "tool_calls": [
+      {"name": "geocode", "args": {"query": "Tokyo"}, "output": "35.68,139.69"},
+      {"name": "weather", "args": {"lat": 35.68, "lon": 139.69, "day": "tomorrow"}, "output": "high 24C, sunny"}
+    ],
+    "expected_tools": ["geocode", "weather"],
+    "output": "Tokyo tomorrow: sunny, high around 24C (75.2F).",
+    "rubric": "Reports tomorrow's Tokyo weather and a correct C-to-F conversion."
+  },
+  {
+    "name": "weather-agent-wasteful",
+    "input": "What's the weather in Tokyo tomorrow?",
+    "plan": "1) geocode Tokyo, 2) fetch tomorrow's forecast, 3) report.",
+    "trajectory": [
+      "Called geocode for Tokyo",
+      "Called geocode for Tokyo again",
+      "Called geocode for Tokyo a third time",
+      "Called weather forecast",
+      "Reported the forecast"
+    ],
+    "tool_calls": [
+      {"name": "geocode", "args": {"query": "Tokyo"}},
+      {"name": "geocode", "args": {"query": "Tokyo"}},
+      {"name": "geocode", "args": {"query": "Tokyo"}},
+      {"name": "weather", "args": {"lat": 35.68, "lon": 139.69, "day": "tomorrow"}}
+    ],
+    "expected_tools": ["geocode", "weather"],
+    "output": "Tokyo tomorrow: sunny, high around 24C.",
+    "rubric": "Reports tomorrow's Tokyo weather."
+  },
+  {
+    "name": "wrong-tool",
+    "input": "Delete nothing — just tell me the weather in Tokyo.",
+    "plan": "Look up the weather and report it.",
+    "trajectory": ["Called the delete_file tool", "Reported a guess"],
+    "tool_calls": [
+      {"name": "delete_file", "args": {"path": "/tmp/cache"}}
+    ],
+    "expected_tools": ["weather"],
+    "output": "It's probably sunny in Tokyo.",
+    "rubric": "Reports Tokyo weather using a weather lookup, not destructive actions."
+  }
+]

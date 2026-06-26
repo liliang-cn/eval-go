@@ -27,6 +27,35 @@ var registry = map[string]metricFactory{
 	"answer_relevancy":  {true, func(s MetricSpec) Metric { return AnswerRelevancy(s.Judge, s.Threshold) }},
 	"context_precision": {true, func(s MetricSpec) Metric { return ContextualPrecision(s.Judge, s.Threshold) }},
 	"rubric":            {true, func(s MetricSpec) Metric { return RubricJudge(s.Judge, s.Threshold) }},
+
+	// agent metrics (evaluate a recorded agent run on the Sample)
+	"tool_correctness":     {false, func(MetricSpec) Metric { return ToolCorrectness() }},
+	"argument_correctness": {true, func(s MetricSpec) Metric { return ArgumentCorrectness(s.Judge, s.Threshold) }},
+	"task_completion":      {true, func(s MetricSpec) Metric { return TaskCompletion(s.Judge, s.Threshold) }},
+	"step_efficiency":      {true, func(s MetricSpec) Metric { return StepEfficiency(s.Judge, s.Threshold) }},
+	"plan_quality":         {true, func(s MetricSpec) Metric { return PlanQuality(s.Judge, s.Threshold) }},
+	"plan_adherence":       {true, func(s MetricSpec) Metric { return PlanAdherence(s.Judge, s.Threshold) }},
+
+	// RAG retrieval-quality metrics
+	"contextual_recall":    {true, func(s MetricSpec) Metric { return ContextualRecall(s.Judge, s.Threshold) }},
+	"contextual_relevancy": {true, func(s MetricSpec) Metric { return ContextualRelevancy(s.Judge, s.Threshold) }},
+
+	// safety / quality metrics
+	"hallucination": {true, func(s MetricSpec) Metric { return Hallucination(s.Judge, s.Threshold) }},
+	"bias":          {true, func(s MetricSpec) Metric { return Bias(s.Judge, s.Threshold) }},
+	"toxicity":      {true, func(s MetricSpec) Metric { return Toxicity(s.Judge, s.Threshold) }},
+	"pii_leakage":   {true, func(s MetricSpec) Metric { return PIILeakage(s.Judge) }},
+	"summarization": {true, func(s MetricSpec) Metric { return Summarization(s.Judge, s.Threshold) }},
+
+	// multi-turn conversational metrics
+	"conversation_completeness": {true, func(s MetricSpec) Metric { return ConversationCompleteness(s.Judge, s.Threshold) }},
+	"knowledge_retention":       {true, func(s MetricSpec) Metric { return KnowledgeRetention(s.Judge, s.Threshold) }},
+	"conversation_relevancy":    {true, func(s MetricSpec) Metric { return ConversationRelevancy(s.Judge, s.Threshold) }},
+	"role_adherence":            {true, func(s MetricSpec) Metric { return RoleAdherence(s.Judge, s.Threshold) }},
+
+	// red-team / safety-probe metrics
+	"attack_resistance": {true, func(s MetricSpec) Metric { return AttackResistance(s.Judge, s.Threshold) }},
+	"refusal":           {false, func(MetricSpec) Metric { return RefusalPresent() }},
 }
 
 // RegisteredMetrics returns the metric names known to BuildMetrics, sorted.
