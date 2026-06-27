@@ -34,6 +34,10 @@ type Sample struct {
 	Rubric   string            `json:"rubric,omitempty"`   // pass/fail criterion for a rubric judge
 	Meta     map[string]string `json:"meta,omitempty"`     // free-form labels carried into reports
 
+	// human gold judgment per metric name, normalized 0..1 (binary: 1=pass, 0=fail).
+	// Only used by AlignMetric to measure judge-vs-human agreement; ignored by scoring.
+	Labels map[string]float64 `json:"labels,omitempty"`
+
 	// --- agent execution (recorded from an agent run; for agentic metrics) ---
 	Plan          string     `json:"plan,omitempty"`           // the agent's stated plan (for plan_quality / plan_adherence)
 	Trajectory    []string   `json:"trajectory,omitempty"`     // ordered reasoning/action steps the agent took

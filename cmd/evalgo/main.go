@@ -13,6 +13,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -39,6 +40,9 @@ type options struct {
 	costIn      float64
 	costOut     float64
 	where       string
+	align       bool
+	alignKappa  float64
+	alignF1     float64
 }
 
 func main() {
@@ -78,6 +82,9 @@ func newRootCmd() *cobra.Command {
 	f.Float64Var(&o.costIn, "cost-in", 0, "USD per 1M prompt tokens (for the cost estimate)")
 	f.Float64Var(&o.costOut, "cost-out", 0, "USD per 1M completion tokens (for the cost estimate)")
 	f.StringVar(&o.where, "where", "", "only evaluate samples whose meta matches key=value (e.g. attack=jailbreak)")
+	f.BoolVar(&o.align, "align", false, "alignment mode: measure judge-vs-human agreement on samples that carry labels[<metric>]")
+	f.Float64Var(&o.alignKappa, "align-min-kappa", 0, "exit 1 if any aligned metric's Cohen's kappa is below this (0 = off)")
+	f.Float64Var(&o.alignF1, "align-min-f1", 0, "exit 1 if any aligned metric's F1 is below this (0 = off)")
 	_ = root.MarkFlagRequired("dataset")
 
 	root.AddCommand(newMetricsCmd())
@@ -362,6 +369,10 @@ func runEval(stdout io.Writer, o options) error {
 		return err
 	}
 
+	if o.align {
+		return runAlign(stdout, o, samples, metrics)
+	}
+
 	suite := evalgo.Suite{Samples: samples, Metrics: metrics, Concurrency: o.concurrency}
 	report := suite.Run(context.Background())
 	if meter != nil {
@@ -395,6 +406,69 @@ func runEval(stdout io.Writer, o options) error {
 		os.Exit(1)
 	}
 	return nil
+}
+
+// runAlign measures judge-vs-human agreement for each metric over the samples
+// that carry a label for it, writes the report, and gates on judge quality.
+func runAlign(stdout io.Writer, o options, samples []evalgo.Sample, metrics []evalgo.Metric) error {
+	ctx := context.Background()
+	// names[i] is the name the user requested in -m (the key they label by),
+	// paired 1:1 with metrics[i]. BuildMetrics drops blank entries the same way.
+	names := cleanMetricNames(o.metrics)
+	var report evalgo.AlignmentReport
+	for i, m := range metrics {
+		key := names[i]
+		res, err := evalgo.AlignMetric(ctx, samples, m, key)
+		if errors.Is(err, evalgo.ErrNoLabels) {
+			fmt.Fprintf(os.Stderr, "evalgo: skipping %q — no samples carry labels[%s]\n", key, key)
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		report = append(report, res)
+	}
+	if len(report) == 0 {
+		return fmt.Errorf(`no metrics had labeled samples; add "labels": {"<metric>": 0..1} to your dataset`)
+	}
+
+	switch o.format {
+	case "json":
+		if err := report.WriteJSON(stdout); err != nil {
+			return err
+		}
+	case "console":
+		report.WriteConsole(stdout, 5)
+	default:
+		return fmt.Errorf("unknown --format %q (use console|json)", o.format)
+	}
+	if o.out != "" {
+		f, err := os.Create(o.out)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		if err := report.WriteJSON(f); err != nil {
+			return err
+		}
+	}
+	if bad := report.Failing(o.alignKappa, o.alignF1); len(bad) > 0 {
+		fmt.Fprintf(os.Stderr, "evalgo: judge alignment gate failed for: %s\n", strings.Join(bad, ", "))
+		os.Exit(1)
+	}
+	return nil
+}
+
+// cleanMetricNames splits a comma list into trimmed, non-empty names — matching
+// how BuildMetrics filters, so names pair 1:1 with the built metrics.
+func cleanMetricNames(csv string) []string {
+	var out []string
+	for _, raw := range strings.Split(csv, ",") {
+		if n := strings.TrimSpace(raw); n != "" {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // gateFailed applies the CI gate: with fail-under > 0, require that fraction of

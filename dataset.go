@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -96,6 +97,15 @@ func LoadCSV(r io.Reader) ([]Sample, error) {
 			case "expected_tools":
 				s.ExpectedTools = splitTrim(val, ",")
 			default:
+				if name, ok := strings.CutPrefix(col, "label."); ok {
+					if f, err := strconv.ParseFloat(val, 64); err == nil {
+						if s.Labels == nil {
+							s.Labels = map[string]float64{}
+						}
+						s.Labels[name] = f
+					}
+					continue
+				}
 				if s.Meta == nil {
 					s.Meta = map[string]string{}
 				}
