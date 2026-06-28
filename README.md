@@ -179,6 +179,56 @@ evalgo -d examples/agent.json --judge env \
   -m tool_correctness,argument_correctness,task_completion,step_efficiency,plan_quality,plan_adherence
 ```
 
+### Run the agent (end-to-end)
+
+The metrics above score a run you already recorded. eval-go can also **run the
+agent for you**: define `Task`s, plug the system under test in as a `Target`, and
+`Bench` executes every task, captures the run into a `Sample`, and scores it — one
+pipeline, no external glue.
+
+```go
+bench := evalgo.Bench{
+    Target:  myAgent,        // a Target: Run(ctx, Task) (RunOutput, error)
+    Tasks:   tasks,          // each: Input + ExpectedTools + Rubric (+ Files seed)
+    Metrics: metrics,        // evalgo.BuildMetrics(["tool_correctness","rubric",...], spec)
+}
+report, samples := bench.Run(ctx)
+```
+
+A `Target` can be in-process (wrap a Go agent) or `ExecTarget`, which drives an
+agent that runs as a **subprocess in any language** — the task is passed via
+`EVAL_*` env vars (`EVAL_INPUT`, `EVAL_RUBRIC`, `EVAL_EXPECTED_TOOLS`,
+`EVAL_FILES`, …) and the program prints a JSON `RunOutput` (or a bare `Sample`)
+to stdout. `Runner` (run only, no scoring) and a per-task `Timeout` are also
+available; a target error becomes a failed `Sample` rather than aborting the batch.
+
+### Compare several agents (`evalgo bench`)
+
+Run the **same tasks through several agents** and get a task × agent PASS/FAIL
+grid — a cross-framework or cross-config benchmark, all from two config files:
+
+```bash
+evalgo bench --tasks tasks.json --targets targets.json --judge env \
+  -m tool_correctness,task_completion,step_efficiency,rubric \
+  --gate task_completion,rubric -o grid.json
+```
+
+`tasks.json` is an array of `Task` (`name`, `input`, `expected_tools`, `rubric`,
+and optional `files` seed fixtures). `targets.json` declares the agents:
+
+```json
+[
+  {"name": "agent-go",   "command": ["go","run","./examples/eval-bench"], "dir": "../agent-go", "env": {"GOWORK": "off"}},
+  {"name": "miniagent",  "command": ["python","run.py"], "dir": "../mini"},
+  {"name": "harness-rs", "command": ["./target/debug/eval-bench"]}
+]
+```
+
+Each agent runs as a subprocess (the `EVAL_*` contract above), so Go, Python and
+Rust agents compete on identical tasks. `--gate` picks which metrics decide
+PASS/FAIL per cell (default `task_completion,rubric`, so a correct-but-inefficient
+run still passes). The library form is `evalgo.Comparison{Targets, Tasks, Metrics, Gate}`.
+
 ## Synthesize a dataset
 
 Generate goldens from your sources with an LLM instead of hand-writing them; the
@@ -269,11 +319,17 @@ m := evalgo.DAG(judge, "json_shape", 0.99, root)
 
 ```
 evalgo -d <dataset> [flags]     evaluate a dataset (root command)
+evalgo bench ...                run tasks through several agents, print a PASS/FAIL grid
 evalgo gen ...                  synthesize a golden dataset from docs/contexts
 evalgo redteam ...              generate an adversarial dataset (offline)
 evalgo diff <old> <new>         compare two reports, gate on regressions
 evalgo metrics                  list registered metric names
 ```
+
+`evalgo bench --tasks tasks.json --targets targets.json` runs every task through
+every agent (each an `EVAL_*`-driven subprocess) and prints a task × agent grid.
+Key flags: `--gate` (metrics that decide PASS/FAIL, default `task_completion,rubric`),
+`--timeout` (per task), `-m`, `--judge`, `--concurrency`, `-o`.
 
 | Flag (eval) | Purpose |
 |---|---|

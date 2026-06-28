@@ -1,0 +1,9 @@
+[
+  {
+    "name": "greet",
+    "input": "Write the word hello into a file out.txt, then report what you did.",
+    "expected_tools": ["write_file"],
+    "rubric": "PASS only if the agent wrote 'hello' to out.txt and reports completing the task.",
+    "files": {}
+  }
+]

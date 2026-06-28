@@ -1,0 +1,3 @@
+[
+  {"name": "stub-agent", "command": ["sh", "-c", "printf '{\"output\":\"wrote hello to out.txt\",\"tool_calls\":[{\"name\":\"write_file\",\"args\":{\"path\":\"out.txt\",\"content\":\"hello\"}}]}'"]}
+]
