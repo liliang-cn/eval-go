@@ -1,5 +1,10 @@
 # Eval-Go
 
+[![CI](https://github.com/liliang-cn/eval-go/actions/workflows/ci.yml/badge.svg)](https://github.com/liliang-cn/eval-go/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/liliang-cn/eval-go.svg)](https://pkg.go.dev/github.com/liliang-cn/eval-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/liliang-cn/eval-go)](https://goreportcard.com/report/github.com/liliang-cn/eval-go)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A native-Go framework for evaluating LLM, RAG, and agent outputs — **27 metrics**,
 synthetic-data generation, red-teaming, caching, cost tracking, and cross-version
 regression gating, as both a library and a CLI.
