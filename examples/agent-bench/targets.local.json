@@ -1,0 +1,5 @@
+[
+  {"name": "qwen3.5", "command": ["./agent/benchagent"], "env": {"OPENAI_MODEL": "qwen3.5:latest"}},
+  {"name": "lfm2.5",  "command": ["./agent/benchagent"], "env": {"OPENAI_MODEL": "lfm2.5:latest"}},
+  {"name": "ornith",  "command": ["./agent/benchagent"], "env": {"OPENAI_MODEL": "ornith:latest"}}
+]

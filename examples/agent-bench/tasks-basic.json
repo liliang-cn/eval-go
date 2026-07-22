@@ -1,0 +1,62 @@
+[
+  {
+    "name": "weather-paris",
+    "input": "What's the weather like in Paris right now?",
+    "expected_tools": ["get_weather"],
+    "rubric": "Calls get_weather for Paris and reports the weather condition."
+  },
+  {
+    "name": "calc-product",
+    "input": "What is 4839 multiplied by 271?",
+    "expected_tools": ["calculator"],
+    "rubric": "Uses the calculator tool and reports the answer 1311369."
+  },
+  {
+    "name": "calc-parens",
+    "input": "Compute (128 + 256) divided by 8.",
+    "expected_tools": ["calculator"],
+    "rubric": "Uses the calculator and reports 48."
+  },
+  {
+    "name": "currency-gbp-jpy",
+    "input": "Convert 250 GBP to Japanese Yen.",
+    "expected_tools": ["convert_currency"],
+    "rubric": "Calls convert_currency with amount 250, from GBP, to JPY and reports the converted amount."
+  },
+  {
+    "name": "email-move-meeting",
+    "input": "Email alice@example.com to let her know the meeting has moved to 3pm.",
+    "expected_tools": ["send_email"],
+    "rubric": "Calls send_email with to=alice@example.com and a body mentioning the 3pm meeting change."
+  },
+  {
+    "name": "calendar-dentist",
+    "input": "Add a dentist appointment to my calendar for 2026-08-01 at 10am.",
+    "expected_tools": ["create_calendar_event"],
+    "rubric": "Calls create_calendar_event with a dentist title and the date 2026-08-01."
+  },
+  {
+    "name": "search-population",
+    "input": "Look up the current population of Japan.",
+    "expected_tools": ["web_search"],
+    "rubric": "Uses web_search (not get_weather) with a query about Japan's population."
+  },
+  {
+    "name": "tip-and-email",
+    "input": "Calculate a 15% tip on a $86.40 bill, then email the tip amount to bob@example.com.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Uses the calculator for 15% of 86.40 (12.96) and then send_email to bob@example.com with that amount."
+  },
+  {
+    "name": "weather-then-plan",
+    "input": "Check tomorrow's weather in Rome, and if it's sunny, add a 'Picnic' event to my calendar for tomorrow at noon.",
+    "expected_tools": ["get_weather", "create_calendar_event"],
+    "rubric": "Calls get_weather for Rome and, since it is sunny, create_calendar_event for a Picnic at noon."
+  },
+  {
+    "name": "search-then-convert",
+    "input": "Find the price of the latest iPhone, then convert 999 USD to EUR.",
+    "expected_tools": ["web_search", "convert_currency"],
+    "rubric": "Uses web_search for the iPhone price and convert_currency for 999 USD to EUR."
+  }
+]

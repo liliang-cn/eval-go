@@ -1,0 +1,5 @@
+[
+  {"name": "gpt-5.6-luna", "command": ["./agent/benchagent"], "env": {"OPENAI_BASE_URL": "https://your-endpoint/v1", "OPENAI_MODEL": "gpt-5.6-luna"}},
+  {"name": "gpt-5.4-mini", "command": ["./agent/benchagent"], "env": {"OPENAI_BASE_URL": "https://your-endpoint/v1", "OPENAI_MODEL": "gpt-5.4-mini"}},
+  {"name": "gemini-3.1-pro", "command": ["./agent/benchagent"], "env": {"OPENAI_BASE_URL": "https://your-endpoint/v1", "OPENAI_MODEL": "gemini-3.1-pro-low"}}
+]

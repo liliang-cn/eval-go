@@ -1,0 +1,74 @@
+[
+  {
+    "name": "cond-weather-branch",
+    "input": "Check tomorrow's weather in London. If it is sunny, add a 'Morning Run' event for tomorrow at 7am. Otherwise, send an email to coach@team.com saying training is indoors.",
+    "expected_tools": ["get_weather", "create_calendar_event"],
+    "rubric": "Checks the weather, and BECAUSE it is sunny, creates the 'Morning Run' event. It must NOT send the email (wrong branch). Taking both branches is a failure."
+  },
+  {
+    "name": "cond-numeric-branch",
+    "input": "If 15% of 240 is greater than 30, convert 100 USD to EUR. Otherwise convert 100 USD to JPY.",
+    "expected_tools": ["calculator", "convert_currency"],
+    "rubric": "Computes 15% of 240 (=36); since 36 > 30, it converts 100 USD to EUR (to=EUR, NOT JPY). Converting to JPY is a failure."
+  },
+  {
+    "name": "cond-calc-then-act",
+    "input": "Calculate (48 + 52) * 3. If the result is over 250, email the number to boss@corp.com. Otherwise just tell me the number.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Computes 300; since 300 > 250, it emails 300 to boss@corp.com. Not emailing is a failure."
+  },
+  {
+    "name": "distractor-currency",
+    "input": "How much is 250 British pounds worth in Japanese yen?",
+    "expected_tools": ["convert_currency"],
+    "rubric": "Uses convert_currency (this is MONEY) from GBP to JPY. Using unit_convert is wrong."
+  },
+  {
+    "name": "distractor-unit",
+    "input": "How many miles is 42 kilometers?",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (physical length) from km to mi. Using convert_currency is wrong."
+  },
+  {
+    "name": "distractor-stock",
+    "input": "What is the current stock price of AAPL?",
+    "expected_tools": ["get_stock_price"],
+    "rubric": "Uses get_stock_price with ticker AAPL. Using web_search is wrong."
+  },
+  {
+    "name": "distractor-reminder",
+    "input": "Set a quick reminder for me to take my medicine in 30 minutes.",
+    "expected_tools": ["set_reminder"],
+    "rubric": "Uses set_reminder (short-term, relative time). Using create_calendar_event (a dated event) is wrong."
+  },
+  {
+    "name": "restraint-knowledge",
+    "input": "Without using any tools, tell me the capital of France.",
+    "expected_tools": [],
+    "rubric": "Answers 'Paris' directly and calls NO tool. Calling any tool violates the instruction and is a failure."
+  },
+  {
+    "name": "restraint-impossible",
+    "input": "Book me a flight to Paris for next Monday.",
+    "expected_tools": [],
+    "rubric": "There is no flight-booking tool. The assistant should say it cannot book flights and call NO tool. Calling any tool (e.g. send_email, web_search) to fake it is a failure."
+  },
+  {
+    "name": "longchain-dinner",
+    "input": "Plan my client dinner: check the weather in Rome, calculate a 20% tip on a $150 bill, convert that tip from USD to EUR, and email the tip in EUR plus the weather to travel@corp.com.",
+    "expected_tools": ["get_weather", "calculator", "convert_currency", "send_email"],
+    "rubric": "Calls all four in a sensible order: get_weather (Rome), calculator (20% of 150 = 30), convert_currency (30 USD to EUR), send_email to travel@corp.com. Missing any step is a failure."
+  },
+  {
+    "name": "longchain-three-events",
+    "input": "Add three calendar events: 'Standup' on 2026-08-03 at 9am, 'Review' on 2026-08-03 at 2pm, and 'Retro' on 2026-08-04 at 4pm.",
+    "expected_tools": ["create_calendar_event"],
+    "rubric": "Creates ALL THREE calendar events with the correct titles, dates, and times. Creating fewer than three is a failure."
+  },
+  {
+    "name": "multiarg-two-conversions",
+    "input": "Convert 999 US dollars to euros, and separately convert 500 British pounds to yen.",
+    "expected_tools": ["convert_currency"],
+    "rubric": "Two convert_currency calls with correct arguments: 999 USD to EUR, and 500 GBP to JPY. Swapping any from/to is a failure."
+  }
+]
