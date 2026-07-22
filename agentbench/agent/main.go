@@ -45,7 +45,11 @@ var tools = []map[string]any{
 
 // ---- simulated tool execution (real enough that answers are gradeable) ----
 
-var rates = map[string]float64{"GBP>JPY": 190, "USD>EUR": 0.92, "EUR>USD": 1.09, "USD>JPY": 155}
+var rates = map[string]float64{
+	"USD>EUR": 0.92, "EUR>USD": 1.09, "USD>GBP": 0.79, "GBP>USD": 1.27,
+	"USD>JPY": 155, "JPY>USD": 0.0065, "EUR>GBP": 0.86, "GBP>EUR": 1.16,
+	"EUR>JPY": 168, "JPY>EUR": 0.0059, "GBP>JPY": 196, "JPY>GBP": 0.0051,
+}
 
 func runTool(name string, args map[string]any) any {
 	switch name {
@@ -105,6 +109,12 @@ func cannedFact(q string) string {
 		return "Japan's population is approximately 124 million (2024)."
 	case strings.Contains(l, "iphone"):
 		return "The latest iPhone starts at $799 in the US."
+	case strings.Contains(l, "vitamin d"):
+		return "The recommended daily vitamin D intake is 600-800 IU for most adults."
+	case strings.Contains(l, "pride and prejudice"):
+		return "'Pride and Prejudice' was written by Jane Austen (1813)."
+	case strings.Contains(l, "capital") && strings.Contains(l, "france"):
+		return "The capital of France is Paris."
 	default:
 		return "Relevant result for: " + q
 	}

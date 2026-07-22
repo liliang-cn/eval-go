@@ -4,11 +4,11 @@ eval-report.json
 *.out
 *.test
 
-# agent-bench harness: built binary, caches, filled-in targets (may hold keys), reports
-examples/agent-bench/agent/benchagent
-examples/agent-bench/.cache/
-examples/agent-bench/targets.cloud.json
-examples/agent-bench/report*.json
+# agentbench: built binary, caches, filled-in targets (may hold keys), reports
+agentbench/agent/benchagent
+agentbench/.cache/
+agentbench/targets.cloud.json
+agentbench/report*.json
 
 # secrets / local env — never commit
 .env

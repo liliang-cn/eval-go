@@ -1,0 +1,352 @@
+[
+  {
+    "name": "home-grocery-budget",
+    "input": "Our grocery budget is $200. We've spent $47.50, $88.20, and $31.90 so far. Work out what's left, and if less than $50 remains, set a reminder to stop spending.",
+    "expected_tools": ["calculator", "set_reminder"],
+    "rubric": "Computes the remainder (200 - 47.50 - 88.20 - 31.90 = 32.40); since 32.40 < 50, sets a reminder. Not setting one is a failure.",
+    "meta": {"domain": "home", "type": "conditional-chain"}
+  },
+  {
+    "name": "home-kids-schedule",
+    "input": "Add two events to the family calendar: 'Soccer practice' on 2026-08-08 at 10am and 'Piano lesson' on 2026-08-09 at 4pm.",
+    "expected_tools": ["create_calendar_event"],
+    "rubric": "Creates BOTH calendar events with the right titles, dates, and times. Creating only one is a failure.",
+    "meta": {"domain": "home", "type": "parallel"}
+  },
+  {
+    "name": "home-laundry-weather",
+    "input": "Check the weather in Chicago. If it's sunny, remind me to hang the laundry outside; otherwise remind me to use the dryer.",
+    "expected_tools": ["get_weather", "set_reminder"],
+    "rubric": "Checks the weather and, because it is sunny, reminds to hang laundry outside (not the dryer branch).",
+    "meta": {"domain": "home", "type": "conditional"}
+  },
+  {
+    "name": "home-utility-split",
+    "input": "The electricity bill is $186.60, split evenly among 3 roommates. Calculate each person's share and email it to roommates@home.com.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Computes 186.60 / 3 = 62.20 and emails that share to roommates@home.com.",
+    "meta": {"domain": "home", "type": "chain"}
+  },
+  {
+    "name": "home-recipe-flour",
+    "input": "My recipe calls for 2 pounds of flour but my scale only reads kilograms. Convert 2 lb to kg for me.",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (physical weight, lb to kg). Using convert_currency is wrong.",
+    "meta": {"domain": "home", "type": "distractor"}
+  },
+  {
+    "name": "home-order-pizza",
+    "input": "Order a large pepperoni pizza for delivery to my house tonight.",
+    "expected_tools": [],
+    "rubric": "There is no food-ordering tool. The assistant should say it cannot place the order and call NO tool. Calling any tool to fake it is a failure.",
+    "meta": {"domain": "home", "type": "restraint"}
+  },
+  {
+    "name": "home-anniversary",
+    "input": "My wedding anniversary is 2026-09-14. Add it to my calendar, and set a reminder to buy flowers the day before.",
+    "expected_tools": ["create_calendar_event", "set_reminder"],
+    "rubric": "Creates the anniversary calendar event on 2026-09-14 and sets a reminder to buy flowers.",
+    "meta": {"domain": "home", "type": "chain"}
+  },
+  {
+    "name": "home-thermostat",
+    "input": "The thermostat reads 22 degrees Celsius but my guest only understands Fahrenheit. What is 22°C in Fahrenheit?",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (temperature, C to F) and reports about 71.6°F.",
+    "meta": {"domain": "home", "type": "distractor"}
+  },
+  {
+    "name": "home-allowance",
+    "input": "Work out my kid's monthly allowance: $5 per week for 4 weeks plus a $10 bonus, then email the total to grandma@family.com.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Computes 5*4 + 10 = 30 and emails the $30 total to grandma@family.com.",
+    "meta": {"domain": "home", "type": "chain"}
+  },
+  {
+    "name": "work-expense-convert",
+    "input": "I spent 450 EUR on the Berlin trip. Convert it to USD for my expense report and email the USD figure to finance@corp.com.",
+    "expected_tools": ["convert_currency", "send_email"],
+    "rubric": "Converts 450 EUR to USD and emails the USD amount to finance@corp.com.",
+    "meta": {"domain": "work", "type": "chain"}
+  },
+  {
+    "name": "work-interviews",
+    "input": "Schedule three interviews on 2026-08-10: 'Candidate A' at 9am, 'Candidate B' at 11am, and 'Candidate C' at 2pm.",
+    "expected_tools": ["create_calendar_event"],
+    "rubric": "Creates all THREE interview calendar events at the correct times. Fewer than three is a failure.",
+    "meta": {"domain": "work", "type": "parallel"}
+  },
+  {
+    "name": "work-revenue-target",
+    "input": "Q3 revenue was $155,000 in July, $160,000 in August, and $170,000 in September. If the total beats the $450,000 target, email 'Great job team!' to all@corp.com; otherwise schedule a review meeting on 2026-08-15.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Sums to 485,000; since that beats 450,000, it emails the congratulations to all@corp.com. Scheduling the review instead is a failure.",
+    "meta": {"domain": "work", "type": "conditional-chain"}
+  },
+  {
+    "name": "work-translate-notice",
+    "input": "Translate 'The contract is approved' into German and email it to partner@firma.de.",
+    "expected_tools": ["translate", "send_email"],
+    "rubric": "Uses translate (to German) then send_email to partner@firma.de. Using web_search instead of translate is wrong.",
+    "meta": {"domain": "work", "type": "distractor-chain"}
+  },
+  {
+    "name": "work-competitor-stock",
+    "input": "What is our competitor's current stock price? Their ticker is MSFT.",
+    "expected_tools": ["get_stock_price"],
+    "rubric": "Uses get_stock_price with ticker MSFT. Using web_search is wrong.",
+    "meta": {"domain": "work", "type": "distractor"}
+  },
+  {
+    "name": "work-call-client",
+    "input": "Call the client at +1-555-0123 and tell them the deal is off.",
+    "expected_tools": [],
+    "rubric": "There is no phone/calling tool. The assistant should say it cannot place calls and call NO tool. Faking it with send_email or another tool is a failure.",
+    "meta": {"domain": "work", "type": "restraint"}
+  },
+  {
+    "name": "work-trip-itinerary",
+    "input": "I'm flying to Rome for a client meeting. Check the weather there; if it's sunny, set a reminder for an outdoor lunch at noon. Either way, email the plan to assistant@corp.com.",
+    "expected_tools": ["get_weather", "set_reminder", "send_email"],
+    "rubric": "Checks Rome weather; since sunny, sets the outdoor-lunch reminder; and emails the plan to assistant@corp.com regardless.",
+    "meta": {"domain": "work", "type": "conditional-chain"}
+  },
+  {
+    "name": "work-budget-overrun",
+    "input": "The project budget is $50,000. We've spent $18,400, $22,750, and $12,300. If we're over budget, email a warning to pm@corp.com; otherwise just tell me what remains.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Sums spending to 53,450 which exceeds 50,000, so it emails the warning to pm@corp.com. Not emailing is a failure.",
+    "meta": {"domain": "work", "type": "conditional-chain"}
+  },
+  {
+    "name": "work-jargon",
+    "input": "Without looking anything up, what does 'EOD' mean in a work email?",
+    "expected_tools": [],
+    "rubric": "Answers 'end of day' directly with no tool call. Calling any tool is a failure.",
+    "meta": {"domain": "work", "type": "restraint"}
+  },
+  {
+    "name": "health-pill-reminder",
+    "input": "Set a reminder to take my blood pressure pill in 8 hours.",
+    "expected_tools": ["set_reminder"],
+    "rubric": "Uses set_reminder (short-term, relative time). Using create_calendar_event is wrong for a relative reminder.",
+    "meta": {"domain": "health", "type": "distractor"}
+  },
+  {
+    "name": "health-pt-appointment",
+    "input": "Add my physical therapy appointment on 2026-08-05 at 3pm to the calendar, and set a reminder to bring my insurance card an hour before.",
+    "expected_tools": ["create_calendar_event", "set_reminder"],
+    "rubric": "Creates the dated PT appointment (calendar) AND sets the bring-insurance-card reminder.",
+    "meta": {"domain": "health", "type": "chain"}
+  },
+  {
+    "name": "health-bmi",
+    "input": "I weigh 80 kg and I'm 1.8 m tall. Calculate my BMI (weight divided by height squared). If it's over 25, remind me to schedule a checkup.",
+    "expected_tools": ["calculator"],
+    "rubric": "Computes 80 / (1.8*1.8) = 24.7; since that is NOT over 25, it must NOT set any reminder. Setting a reminder is a failure.",
+    "meta": {"domain": "health", "type": "conditional-restraint"}
+  },
+  {
+    "name": "health-water",
+    "input": "I should drink 8 glasses of water a day at 250 ml each. Work out my daily total in liters, then set a reminder to refill my bottle.",
+    "expected_tools": ["calculator", "set_reminder"],
+    "rubric": "Computes 8*250 = 2000 ml = 2 liters and sets a refill reminder.",
+    "meta": {"domain": "health", "type": "chain"}
+  },
+  {
+    "name": "health-vitamin",
+    "input": "Look up the recommended daily dose of vitamin D.",
+    "expected_tools": ["web_search"],
+    "rubric": "Uses web_search for the vitamin D dose. Using get_stock_price or another tool is wrong.",
+    "meta": {"domain": "health", "type": "distractor"}
+  },
+  {
+    "name": "health-diagnose",
+    "input": "I have a headache and a fever. Tell me exactly which disease I have.",
+    "expected_tools": [],
+    "rubric": "There is no diagnosis tool. The assistant should decline to diagnose (suggest seeing a doctor) and call NO tool. Faking a diagnosis via a tool is a failure.",
+    "meta": {"domain": "health", "type": "restraint"}
+  },
+  {
+    "name": "health-run-weather",
+    "input": "I want to exercise today. Check the weather in Denver — if it's sunny, remind me to go for a run at 6pm; if not, remind me to hit the gym.",
+    "expected_tools": ["get_weather", "set_reminder"],
+    "rubric": "Checks Denver weather and, since sunny, reminds to run at 6pm (not the gym branch).",
+    "meta": {"domain": "health", "type": "conditional"}
+  },
+  {
+    "name": "health-calorie",
+    "input": "My daily calorie budget is 2000. I've eaten 650, 480, and 720 calories. If I don't have room for a 200-calorie snack, remind me to skip dessert.",
+    "expected_tools": ["calculator", "set_reminder"],
+    "rubric": "Computes eaten = 1850, leaving 150 which is less than 200, so there is no room and it sets the skip-dessert reminder.",
+    "meta": {"domain": "health", "type": "conditional-chain"}
+  },
+  {
+    "name": "health-steps",
+    "input": "My fitness tracker logged 10 km of walking today. How many miles is that?",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (km to mi) and reports about 6.2 miles.",
+    "meta": {"domain": "health", "type": "distractor"}
+  },
+  {
+    "name": "travel-yen-budget",
+    "input": "I have a 600 EUR budget for Tokyo. Convert it to Japanese yen and email the amount to my travel buddy at buddy@trip.com.",
+    "expected_tools": ["convert_currency", "send_email"],
+    "rubric": "Converts 600 EUR to JPY and emails the yen amount to buddy@trip.com.",
+    "meta": {"domain": "travel", "type": "chain"}
+  },
+  {
+    "name": "travel-pack-weather",
+    "input": "Check the weather in Barcelona. If it's sunny, remind me to pack sunscreen; otherwise remind me to pack an umbrella.",
+    "expected_tools": ["get_weather", "set_reminder"],
+    "rubric": "Checks Barcelona weather; since sunny, reminds to pack sunscreen (not the umbrella branch).",
+    "meta": {"domain": "travel", "type": "conditional"}
+  },
+  {
+    "name": "travel-multi-currency",
+    "input": "For my Europe trip, convert 1000 USD to EUR and, separately, 1000 USD to GBP.",
+    "expected_tools": ["convert_currency"],
+    "rubric": "Makes two convert_currency calls: 1000 USD to EUR and 1000 USD to GBP, with correct arguments each.",
+    "meta": {"domain": "travel", "type": "parallel"}
+  },
+  {
+    "name": "travel-drive-distance",
+    "input": "The drive is 320 kilometers. Convert that to miles so my American friend understands.",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (km to mi). Using convert_currency is wrong.",
+    "meta": {"domain": "travel", "type": "distractor"}
+  },
+  {
+    "name": "travel-flight-checkin",
+    "input": "Add a 'Flight to Rome' event on 2026-08-20 at 8am, and set a reminder to check in 24 hours beforehand.",
+    "expected_tools": ["create_calendar_event", "set_reminder"],
+    "rubric": "Creates the dated flight calendar event and sets the check-in reminder.",
+    "meta": {"domain": "travel", "type": "chain"}
+  },
+  {
+    "name": "travel-book-hotel",
+    "input": "Book me a hotel room in Paris for two nights next week.",
+    "expected_tools": [],
+    "rubric": "There is no hotel-booking tool. The assistant should say it cannot book and call NO tool. Faking it with another tool is a failure.",
+    "meta": {"domain": "travel", "type": "restraint"}
+  },
+  {
+    "name": "travel-phrase",
+    "input": "Translate 'Where is the train station?' into French, and set a reminder to review it before my trip.",
+    "expected_tools": ["translate", "set_reminder"],
+    "rubric": "Uses translate (to French) then set_reminder to review it. Using web_search instead of translate is wrong.",
+    "meta": {"domain": "travel", "type": "distractor-chain"}
+  },
+  {
+    "name": "travel-tip-abroad",
+    "input": "Dinner in London cost 75 pounds. Calculate a 12% tip, and convert that tip to USD so I know what I'm really spending.",
+    "expected_tools": ["calculator", "convert_currency"],
+    "rubric": "Computes 12% of 75 = 9 GBP, then converts 9 GBP to USD.",
+    "meta": {"domain": "travel", "type": "chain"}
+  },
+  {
+    "name": "finance-portfolio",
+    "input": "I own 10 shares of TSLA. Check the current price and calculate my total holding value.",
+    "expected_tools": ["get_stock_price", "calculator"],
+    "rubric": "Gets the TSLA price via get_stock_price, then multiplies by 10 with the calculator.",
+    "meta": {"domain": "finance", "type": "chain"}
+  },
+  {
+    "name": "finance-loan-payoff",
+    "input": "My loan balance is $12,000 and I pay $450 a month. Work out how many months to pay it off, and if it's more than 24 months, remind me to make extra payments.",
+    "expected_tools": ["calculator", "set_reminder"],
+    "rubric": "Computes 12000 / 450 = about 26.7 months; since that exceeds 24, it sets the extra-payments reminder.",
+    "meta": {"domain": "finance", "type": "conditional-chain"}
+  },
+  {
+    "name": "finance-fx-advisor",
+    "input": "Convert 5000 USD to EUR and, separately, 5000 USD to GBP, then email both amounts to advisor@bank.com.",
+    "expected_tools": ["convert_currency", "send_email"],
+    "rubric": "Two convert_currency calls (USD to EUR, USD to GBP) then send_email to advisor@bank.com with both amounts.",
+    "meta": {"domain": "finance", "type": "parallel-chain"}
+  },
+  {
+    "name": "finance-savings-goal",
+    "input": "I want to save $6000 and I've saved $2400 so far. If I'm less than halfway there, set a reminder to raise my monthly deposit.",
+    "expected_tools": ["calculator", "set_reminder"],
+    "rubric": "Halfway is 3000; since 2400 is below that, it sets the raise-deposit reminder.",
+    "meta": {"domain": "finance", "type": "conditional-chain"}
+  },
+  {
+    "name": "finance-tax",
+    "input": "My freelance income was $8500. Calculate the 22% tax owed and email the amount to accountant@tax.com.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Computes 8500 * 0.22 = 1870 and emails that to accountant@tax.com.",
+    "meta": {"domain": "finance", "type": "chain"}
+  },
+  {
+    "name": "finance-stock-alert",
+    "input": "Check NVDA's stock price. If it's above $200, remind me to consider selling.",
+    "expected_tools": ["get_stock_price", "set_reminder"],
+    "rubric": "Gets the NVDA price (about $231, above $200), so it sets the consider-selling reminder.",
+    "meta": {"domain": "finance", "type": "conditional-chain"}
+  },
+  {
+    "name": "finance-transfer",
+    "input": "Transfer $500 from my checking account to my savings account.",
+    "expected_tools": [],
+    "rubric": "There is no bank-transfer tool. The assistant should say it cannot move money and call NO tool. Faking it is a failure.",
+    "meta": {"domain": "finance", "type": "restraint"}
+  },
+  {
+    "name": "finance-interest",
+    "input": "Calculate the simple interest on $10,000 at 4% per year for 3 years (principal times rate times years), then email the result to self@me.com.",
+    "expected_tools": ["calculator", "send_email"],
+    "rubric": "Computes 10000 * 0.04 * 3 = 1200 and emails it to self@me.com.",
+    "meta": {"domain": "finance", "type": "chain"}
+  },
+  {
+    "name": "personal-study-plan",
+    "input": "Add three study sessions: 'Math' on 2026-08-11 at 6pm, 'History' on 2026-08-12 at 6pm, and 'Science' on 2026-08-13 at 6pm.",
+    "expected_tools": ["create_calendar_event"],
+    "rubric": "Creates all THREE study-session calendar events at the correct dates and times.",
+    "meta": {"domain": "personal", "type": "parallel"}
+  },
+  {
+    "name": "personal-language",
+    "input": "Translate 'Good morning, nice to meet you' into Japanese, and set a daily reminder to practice it.",
+    "expected_tools": ["translate", "set_reminder"],
+    "rubric": "Uses translate (to Japanese) then set_reminder to practice. Using web_search instead of translate is wrong.",
+    "meta": {"domain": "personal", "type": "distractor-chain"}
+  },
+  {
+    "name": "personal-planet",
+    "input": "Without using any tools, name the largest planet in our solar system.",
+    "expected_tools": [],
+    "rubric": "Answers 'Jupiter' directly with no tool call. Calling any tool is a failure.",
+    "meta": {"domain": "personal", "type": "restraint"}
+  },
+  {
+    "name": "personal-leap-year",
+    "input": "Without any tools, how many days are in a leap year?",
+    "expected_tools": [],
+    "rubric": "Answers '366' directly with no tool call. Calling any tool is a failure.",
+    "meta": {"domain": "personal", "type": "restraint"}
+  },
+  {
+    "name": "personal-grades",
+    "input": "My test scores are 88, 92, 79, and 85. Calculate the average, and if it's below 85, remind me to study harder.",
+    "expected_tools": ["calculator"],
+    "rubric": "Computes the average = 86; since 86 is NOT below 85, it must NOT set any reminder. Setting one is a failure.",
+    "meta": {"domain": "personal", "type": "conditional-restraint"}
+  },
+  {
+    "name": "personal-author",
+    "input": "Look up who wrote 'Pride and Prejudice'.",
+    "expected_tools": ["web_search"],
+    "rubric": "Uses web_search and reports Jane Austen. Using another tool is wrong.",
+    "meta": {"domain": "personal", "type": "distractor"}
+  },
+  {
+    "name": "personal-celsius",
+    "input": "It's 30 degrees Celsius outside — convert that to Fahrenheit for my American pen pal.",
+    "expected_tools": ["unit_convert"],
+    "rubric": "Uses unit_convert (C to F) and reports 86°F. Using convert_currency is wrong.",
+    "meta": {"domain": "personal", "type": "distractor"}
+  }
+]
