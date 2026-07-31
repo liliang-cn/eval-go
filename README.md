@@ -29,7 +29,7 @@ system already produced (carried on the `Sample`), so any framework — or none 
 can emit the data, with no live `@observe`-style instrumentation.
 
 It also ships **[AgentBench](agentbench/)** — a tool-calling benchmark that ranks
-LLMs (local Ollama or cloud) across 50 real-world scenarios on tool choice,
+LLMs (local Ollama or cloud) across 30 real-world scenarios on tool choice,
 conditional orchestration, distractor resistance, and knowing when *not* to call
 a tool.
 

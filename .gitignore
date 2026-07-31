@@ -8,6 +8,7 @@ eval-report.json
 agentbench/agent/benchagent
 agentbench/.cache/
 agentbench/targets.cloud.json
+agentbench/targets.products*.json
 agentbench/report*.json
 
 # secrets / local env — never commit

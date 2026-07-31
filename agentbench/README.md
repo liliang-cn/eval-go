@@ -23,13 +23,14 @@ Everyone can call *a* tool. What separates models is the hard part:
   frontier model tested failed the "book a flight" trap by faking it with a tool.
 - **Long chains** — 3–5 dependent tool calls in the correct order, no missing steps.
 
-## Task sets
+## Task set
 
-| File | Scenarios | Focus |
-|---|---|---|
-| `tasks/life-50.json` | **50** | Real-world scenarios across **home, work, health, travel, finance, personal** — the flagship set. |
-| `tasks/hard-12.json` | 12 | Concentrated hard cases (conditional / distractor / restraint / long chain). Separates frontier models. |
-| `tasks/basic-10.json` | 10 | Everyday single-tool + short chains. Saturates for frontier models; good for separating small/local ones. |
+`tasks/core-30.json` — **30 scenarios**, 5 each across **home, work, health,
+travel, finance, personal**. Curated (not generated) for diagnostic value: heavy
+on the types that actually separate agents — **restraint** (8, the single biggest
+differentiator we've found), **conditional** / **conditional-chain** (10), **chains**
+(6) — and light on plain distractor-tool picking (1), which every model we've
+tested already saturates near 100%.
 
 Every task carries **ground truth**: `expected_tools` (the correct tool *set*) and a
 `rubric`. Conditional tasks include both branches — some are designed so the correct
@@ -54,14 +55,14 @@ go build -o agent/benchagent ./agent          # build the runner once
 export LLM_BASE_URL=... LLM_API_KEY=... LLM_MODEL=...
 
 # --- local Ollama models (no key needed; agent defaults to localhost:11434/v1) ---
-evalgo bench --tasks tasks/life-50.json --targets targets.local.json \
+evalgo bench --tasks tasks/core-30.json --targets targets.local.json \
   -m tool_correctness,task_completion,step_efficiency \
   --gate tool_correctness,task_completion --cache .cache
 
 # --- cloud models (the agent reads OPENAI_API_KEY from the env, never the file) ---
 export OPENAI_API_KEY=sk-...
 cp targets.cloud.example.json targets.cloud.json     # edit OPENAI_BASE_URL + models
-evalgo bench --tasks tasks/life-50.json --targets targets.cloud.json \
+evalgo bench --tasks tasks/core-30.json --targets targets.cloud.json \
   -m tool_correctness,task_completion,step_efficiency \
   --gate tool_correctness,task_completion --concurrency 4 --cache .cache -o report.json
 ```
