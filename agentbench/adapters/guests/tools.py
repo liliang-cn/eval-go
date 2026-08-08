@@ -35,6 +35,7 @@ import os
 import re
 import sys
 import threading
+import time
 import traceback
 import urllib.error
 import urllib.request
@@ -328,7 +329,7 @@ def _gateway() -> tuple[str, str, str]:
     return base, key, model
 
 
-def _chat(payload: dict[str, Any], timeout: int = 90) -> tuple[int, str]:
+def _chat_once(payload: dict[str, Any], timeout: int) -> tuple[int, str]:
     base, key, _ = _gateway()
     req = urllib.request.Request(
         f"{base}/chat/completions",
@@ -343,6 +344,23 @@ def _chat(payload: dict[str, Any], timeout: int = 90) -> tuple[int, str]:
         return exc.code, exc.read().decode("utf-8", "replace")
     except Exception as exc:  # network / timeout
         return 0, str(exc)
+
+
+def _chat(payload: dict[str, Any], timeout: int = 90, attempts: int = 4) -> tuple[int, str]:
+    """POST to the gateway, retrying transient failures. Shared gateways answer
+    429/model_cooldown under load, and a search tool that gives up on the first
+    429 turns into a phantom capability gap in the benchmark."""
+    status, body = 0, "no attempt"
+    for attempt in range(attempts):
+        status, body = _chat_once(payload, timeout)
+        if status == 200:
+            return status, body
+        transient = status in (0, 408, 409, 425, 429, 500, 502, 503, 504) or \
+            re.search(r"cooldown|rate.?limit|overload|temporarily", body, re.I)
+        if not transient or attempt == attempts - 1:
+            return status, body
+        time.sleep(min(2 ** attempt * 3, 20))
+    return status, body
 
 
 def _extract_text(body: str) -> str:
@@ -438,19 +456,33 @@ def web_search(query: str) -> str:
         "web_search_options": {},
     }
     status, body = _chat(payload)
+    text = _extract_text(body) if status == 200 else ""
     degraded = False
     rejected = status != 200 and re.search(
         r"unsupported|does not support|invalid|unknown|unrecognized", body, re.I)
     # Some gateways accept web_search_options and then answer with empty content
     # instead of erroring -- treat that as a rejection too.
-    if rejected or (status == 200 and not _extract_text(body)):
+    if rejected or not text:
         payload.pop("web_search_options", None)
-        status, body = _chat(payload)
         degraded = True
+        for attempt in range(2):  # the gateway occasionally returns reasoning-only turns
+            if attempt:
+                payload["messages"] = messages + [{
+                    "role": "system",
+                    "content": "Your previous reply was empty. Answer the query now, in plain text, "
+                               "with your best current knowledge. Never reply with empty content.",
+                }]
+            status, body = _chat(payload)
+            text = _extract_text(body) if status == 200 else ""
+            if text:
+                break
     if status != 200:
         return json.dumps({"ok": False, "query": query, "error": f"search backend HTTP {status}: {body[:400]}"},
                           ensure_ascii=False)
-    result = {"ok": True, "query": query, "result": _extract_text(body)}
+    if not text:
+        return json.dumps({"ok": False, "query": query,
+                           "error": "search backend returned an empty response"}, ensure_ascii=False)
+    result = {"ok": True, "query": query, "result": text}
     if degraded:
         result["degraded"] = True
         result["note"] = ("gateway did not honour web_search_options; answered from the model's own "

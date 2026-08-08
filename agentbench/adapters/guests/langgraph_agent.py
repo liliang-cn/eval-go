@@ -23,7 +23,9 @@ def _model():
     from langchain_openai import ChatOpenAI
 
     base, key, model = T._gateway()
-    return ChatOpenAI(model=model, base_url=base, api_key=key, temperature=0, timeout=180, max_retries=2)
+    # max_retries is generous on purpose: the shared gateway answers 429
+    # /model_cooldown under load, and a dropped turn would look like a framework loss.
+    return ChatOpenAI(model=model, base_url=base, api_key=key, temperature=0, timeout=180, max_retries=6)
 
 
 def _tools():

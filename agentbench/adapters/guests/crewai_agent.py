@@ -41,6 +41,9 @@ def _llm():
     from crewai import LLM
 
     model = _MODEL if "/" in _MODEL else f"openai/{_MODEL}"
+    # NB: CrewAI 1.x forwards extra LLM kwargs straight to Completions.create, so
+    # litellm-style knobs like num_retries raise TypeError at call time (not at
+    # construction). Retries are left to CrewAI's own loop.
     return LLM(model=model, base_url=_BASE, api_key=_KEY, temperature=0)
 
 

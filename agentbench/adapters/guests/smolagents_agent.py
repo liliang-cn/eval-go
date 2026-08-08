@@ -25,7 +25,13 @@ def _model():
     from smolagents import OpenAIServerModel
 
     base, key, model = T._gateway()
-    return OpenAIServerModel(model_id=model, api_base=base, api_key=key, temperature=0)
+    # client_kwargs.max_retries: the shared gateway answers 429/model_cooldown
+    # under load, and a dropped turn would look like a framework loss.
+    try:
+        return OpenAIServerModel(model_id=model, api_base=base, api_key=key, temperature=0,
+                                 client_kwargs={"max_retries": 6, "timeout": 180})
+    except TypeError:
+        return OpenAIServerModel(model_id=model, api_base=base, api_key=key, temperature=0)
 
 
 def _tools():
