@@ -465,13 +465,16 @@ def web_search(query: str) -> str:
     if rejected or not text:
         payload.pop("web_search_options", None)
         degraded = True
-        for attempt in range(2):  # the gateway occasionally returns reasoning-only turns
-            if attempt:
-                payload["messages"] = messages + [{
-                    "role": "system",
-                    "content": "Your previous reply was empty. Answer the query now, in plain text, "
-                               "with your best current knowledge. Never reply with empty content.",
-                }]
+        # A "you are a web search backend" framing makes this gateway's model
+        # emit a reasoning-only turn with empty content; a plain question does not.
+        ladder = [messages, [{
+            "role": "user",
+            "content": f"Search query: {query}\n\nAnswer this query with concrete facts in plain "
+                       f"text. If you cannot be certain, say what you do know and flag the "
+                       f"uncertainty. Never reply with an empty message.",
+        }]]
+        for attempt_messages in ladder:
+            payload["messages"] = attempt_messages
             status, body = _chat(payload)
             text = _extract_text(body) if status == 200 else ""
             if text:
