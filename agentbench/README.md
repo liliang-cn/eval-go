@@ -98,3 +98,36 @@ Append objects to a `tasks/*.json` file:
 ```
 
 Filter a run to one domain with Eval-Go's `--where`, e.g. `--where domain=health`.
+
+## Guest frameworks (LangGraph / CrewAI / smolagents)
+
+`adapters/guests/` puts three third-party agent frameworks on the same task set as
+the in-house agents, so the numbers compare *agent loops* rather than tool surfaces:
+
+- `tools.py` — one shared tool suite (`resolve_datetime`, `set_reminder`,
+  `add_schedule`, `save_note`, `calculator`, `web_search`) bound identically by all
+  three guests. There is deliberately no email/phone/booking tool, so the restraint
+  tasks still test whether the agent admits a missing capability. State goes to
+  `./.guest-home/<target>/store.json`; tool calls are recorded by the suite itself,
+  not by per-framework callbacks.
+- `langgraph_agent.py` / `crewai_agent.py` / `smolagents_agent.py` — default
+  framework shapes (prebuilt ReAct graph, single Agent+Task crew, `ToolCallingAgent`),
+  one plain shared system prompt, no defensive prompt engineering.
+
+```bash
+python3.12 -m venv adapters/guests/.venv
+./adapters/guests/.venv/bin/pip install -r adapters/guests/requirements.txt
+cp targets.guests.example.json targets.guests.json    # then fill in the gateway env
+
+# one framework, one round
+TARGETS_FILE=targets.guests.json ./run-with-target-env.sh langgraph \
+  ./bin/evalgo bench --tasks tasks/products-50.json --targets targets.guest-langgraph.json \
+  --gate task_completion --cache .judge-cache --concurrency 2 --timeout 8m \
+  -o results/report-guest-langgraph-run1.json
+```
+
+Run the frameworks **serially** with a pause between them: the guests, the in-house
+agents and the judge all share one gateway pool, and a parallel run trips
+`429 model_cooldown`. Before trusting a round, count samples with an empty `output`
+in the report JSON — more than a handful means the pool collapsed, not that the
+framework lost.
