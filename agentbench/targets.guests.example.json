@@ -1,0 +1,41 @@
+[
+ {
+  "name": "langgraph",
+  "command": [
+   "./adapters/guests/.venv/bin/python",
+   "./adapters/guests/langgraph_agent.py"
+  ],
+  "env": {
+   "LLM_BASE": "https://your-gateway.example/v1",
+   "LLM_KEY": "sk-...",
+   "LLM_MODEL": "gemini-3.6-flash-high",
+   "GUEST_HOME": "./.guest-home/langgraph"
+  }
+ },
+ {
+  "name": "crewai",
+  "command": [
+   "./adapters/guests/.venv/bin/python",
+   "./adapters/guests/crewai_agent.py"
+  ],
+  "env": {
+   "LLM_BASE": "https://your-gateway.example/v1",
+   "LLM_KEY": "sk-...",
+   "LLM_MODEL": "gemini-3.6-flash-high",
+   "GUEST_HOME": "./.guest-home/crewai"
+  }
+ },
+ {
+  "name": "smolagents",
+  "command": [
+   "./adapters/guests/.venv/bin/python",
+   "./adapters/guests/smolagents_agent.py"
+  ],
+  "env": {
+   "LLM_BASE": "https://your-gateway.example/v1",
+   "LLM_KEY": "sk-...",
+   "LLM_MODEL": "gemini-3.6-flash-high",
+   "GUEST_HOME": "./.guest-home/smolagents"
+  }
+ }
+]

@@ -20,3 +20,13 @@ agentbench/report*.json
 .DS_Store
 .idea/
 .vscode/
+agentbench/bin/
+agentbench/targets.run.json
+
+# agentbench guest frameworks (LangGraph / CrewAI / smolagents)
+agentbench/adapters/guests/.venv/
+__pycache__/
+agentbench/.guest-home/
+agentbench/targets.guests.json
+agentbench/targets.guest-*.json
+!agentbench/targets.guests.example.json
