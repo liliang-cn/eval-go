@@ -30,3 +30,11 @@ agentbench/.guest-home/
 agentbench/targets.guests.json
 agentbench/targets.guest-*.json
 !agentbench/targets.guests.example.json
+
+# agentbench qi-harness guest (Qi language)
+agentbench/adapters/qiharness/bin/
+agentbench/adapters/qiharness/*.o
+agentbench/adapters/qiharness/Harness
+agentbench/.qi-home/
+agentbench/targets.qiharness.json
+!agentbench/targets.qiharness.example.json

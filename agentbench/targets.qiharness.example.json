@@ -1,0 +1,14 @@
+[
+ {
+  "name": "qiharness",
+  "command": [
+   "./adapters/qiharness/run.sh"
+  ],
+  "env": {
+   "LLM_BASE": "https://your-gateway.example/v1",
+   "LLM_KEY": "sk-...",
+   "LLM_MODEL": "gemini-3.6-flash-high",
+   "QIHARNESS_HOME": "./.qi-home"
+  }
+ }
+]

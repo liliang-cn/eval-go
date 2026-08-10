@@ -131,3 +131,34 @@ agents and the judge all share one gateway pool, and a parallel run trips
 `429 model_cooldown`. Before trusting a round, count samples with an empty `output`
 in the report JSON — more than a handful means the pool collapsed, not that the
 framework lost.
+
+## Guest framework: qi-harness (Qi language)
+
+`adapters/qiharness/` puts [qi-harness](https://github.com/qilang-project) — an agent
+framework written in **Qi (奇语)**, a compiled language with Chinese keywords — on the
+same task set. Same rules as the Python guests: the six-tool surface, no email/phone
+tool, and the one plain system prompt from `tools.py`.
+
+- `qiharness_agent.qi` — the whole adapter: `创建代理` + six `添加工具` + `运行`
+  (qi-harness's automatic tool-dispatch loop), plus Qi reimplementations of the guest
+  tools (a hand-written recursive-descent evaluator for `calculator`, a relative-time
+  resolver for `resolve_datetime`, `HTTP.请求` against the same gateway for
+  `web_search`). State goes to `./.qi-home/store.json`; tool calls are recorded by the
+  handlers themselves, so the `tool_calls` channel is the real dispatch order.
+- `run.sh` — keeps stdout clean (the Qi compiler and qi-harness's legacy trace sink
+  both write there, so the run goes to stderr and the protocol line is read back from
+  a file), compiles the agent once instead of `qi run`-ing it 50 times, and creates the
+  `Harness` package symlink the Qi import resolver needs.
+
+Requires the `qi` toolchain (`qi run` / `qi compile`) and a qi-harness checkout.
+Point `QIHARNESS_DIR` at it; the default is the sibling layout
+`<repos>/dev/lang/qilang/qi-harness`.
+
+```bash
+cp targets.qiharness.example.json targets.qiharness.json   # then fill in the gateway env
+
+TARGETS_FILE=targets.qiharness.json ./run-with-target-env.sh qiharness \
+  ./bin/evalgo bench --tasks tasks/products-50.json --targets targets.qiharness.json \
+  --gate task_completion --cache .judge-cache --concurrency 2 --timeout 8m \
+  -o results/report-guest-qiharness-run1.json
+```
