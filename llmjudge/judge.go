@@ -10,9 +10,9 @@ import (
 
 	evalgo "github.com/liliang-cn/eval-go"
 
-	"github.com/liliang-cn/agent-go/v2/pkg/domain"
-	"github.com/liliang-cn/agent-go/v2/pkg/llm"
-	"github.com/liliang-cn/agent-go/v2/pkg/providers"
+	"github.com/liliang-cn/agent-go/v3/pkg/domain"
+	"github.com/liliang-cn/agent-go/v3/pkg/llm"
+	"github.com/liliang-cn/agent-go/v3/pkg/providers"
 )
 
 // New wraps an agent-go *llm.Service as a judge.
