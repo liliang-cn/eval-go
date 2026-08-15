@@ -38,3 +38,10 @@ agentbench/adapters/qiharness/Harness
 agentbench/.qi-home/
 agentbench/targets.qiharness.json
 !agentbench/targets.qiharness.example.json
+agentbench/.judge-cache/
+agentbench/.superai-home/
+agentbench/results/run-*.log
+agentbench/targets.superai.json
+agentbench/targets.superleo.json
+agentbench/targets.dsh.json
+agentbench/.superleo-home/

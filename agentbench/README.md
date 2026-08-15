@@ -41,15 +41,36 @@ which catches over-acting.
 
 `get_weather`, `web_search`, `calculator`, `send_email`, `create_calendar_event`,
 `convert_currency`, plus four deliberate distractors: `unit_convert`,
-`get_stock_price`, `set_reminder`, `translate`. The agent executes tools for real
-where it can (a working calculator, a full currency table, unit conversions) so
+`get_stock_price`, `set_reminder`, `translate`. Tools execute for real where they
+can (a working calculator, a full USD/EUR/GBP/JPY table, unit conversions) so
 final answers are gradeable, not hand-waved.
+
+They are defined once in `tools/` and served two ways, so every agent under test
+is offered the *same* tools and `tool_correctness` is comparable:
+
+| Front end | For | How |
+|---|---|---|
+| `cmd/benchagent` | a raw model | attaches them to an OpenAI-compatible request |
+| `cmd/benchmcp` | an agent with its own runtime | serves them over **MCP stdio** |
+
+Without the MCP server, an agent like goose answers with whatever tools it
+happens to have, and `tool_correctness` compares nothing — it cannot tell
+"picked the wrong tool" from "was offered a different tool".
+
+```bash
+go build -o bin/benchmcp ./cmd/benchmcp
+
+# goose: load the benchmark tools for this run
+goose run --with-extension "$PWD/bin/benchmcp" --text "..."
+
+# any other MCP client: point it at ./bin/benchmcp over stdio
+```
 
 ## Run it
 
 ```bash
 cd agentbench
-go build -o agent/benchagent ./agent          # build the runner once
+go build -o bin/benchagent ./cmd/benchagent   # build the runner once
 
 # the JUDGE — any OpenAI-compatible endpoint
 export LLM_BASE_URL=... LLM_API_KEY=... LLM_MODEL=...

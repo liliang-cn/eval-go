@@ -1,0 +1,2598 @@
+{
+  "targets": [
+    {
+      "name": "superai",
+      "report": {
+        "samples": [
+          {
+            "sample": "home-grocery-budget",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.25,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: calculator; unexpected: resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the remaining budget ($32.40) and set a reminder as instructed since the remaining amount was under $50."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent directly resolved the necessary datetime context, set the reminder as triggered by the budget calculation, and completed the task with no redundant or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly computes the remaining balance ($32.40) and sets a reminder to stop spending since the amount is less than $50."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-kids-schedule",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: create_calendar_event; unexpected: add_schedule, memory_save, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent successfully added both events ('Soccer practice' on 2026-08-08 at 10:00 and 'Piano lesson' on 2026-08-09 at 16:00) to the calendar as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.7,
+                "passed": true,
+                "reason": "The agent completed the task, but made unnecessary tool calls: calling resolve_datetime twice for fully specified absolute dates and saving to memory without being asked."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "Both events were successfully added with the correct titles, dates, and times."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-laundry-weather",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: get_weather, set_reminder; unexpected: mcp_websearch_basic, mcp_websearch_fetch_page_content, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly checked the weather in Chicago, determined it was sunny, and provided the requested reminder to hang the laundry outside."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent took multiple redundant search steps and repeated tool calls (mixing web_search and mcp_websearch_basic) for a simple weather query."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly checked the weather in Chicago, identified it as sunny, and instructed to hang the laundry outside."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-utility-split",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: bash, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The agent correctly calculated each roommate's share ($62.20), but failed to send the email to roommates@home.com because no email tool was available."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent took redundant and conflicting steps, including searching for MCP servers for a simple task and invoking both `task_blocked()` and `task_complete()`."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The output correctly computed each person's share ($62.20), but did not actually send the email to roommates@home.com due to tool limitations."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-recipe-flour",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: unit_convert; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly converted 2 pounds to kilograms (~0.907 kg) and provided a helpful rounding recommendation for the user's scale."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent ended the task immediately without providing the requested unit conversion."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly converts 2 pounds to approximately 0.907 kilograms (weight unit conversion) without using currency conversion."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-order-pizza",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent failed to order the pizza because it lacked the necessary online ordering tool integration."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.2,
+                "passed": false,
+                "reason": "The agent performed redundant tool searches, failed to order the pizza or gather required details (address/payment), and called conflicting termination steps (task_blocked followed by task_complete)."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The assistant correctly stated that it cannot place the order due to the lack of ordering tools, and it called no tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-anniversary",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.16666666666666666,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: create_calendar_event; unexpected: add_schedule, memory_save, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent successfully added the wedding anniversary to the calendar for 2026-09-14 and set a reminder to buy flowers for the day before (2026-09-13)."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.85,
+                "passed": true,
+                "reason": "The agent completed all parts of the task directly, though calling resolve_datetime twice was slightly redundant given the explicit date provided."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output confirms adding the anniversary event on 2026-09-14 to the calendar and setting a reminder to buy flowers on the day before (2026-09-13)."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-thermostat",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: unit_convert; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.95,
+                "passed": true,
+                "reason": "The agent correctly converted 22°C to 71.6°F and showed the formula, though it responded in Chinese to an English prompt."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent called task_complete immediately without providing the conversion answer."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly converts 22°C to Fahrenheit, explicitly showing the calculation and reporting 71.6°F."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-allowance",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: bash, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent correctly calculated the allowance total ($30), but failed to email the result to grandma@family.com due to missing email tools."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent failed to send the email, took unnecessary tool calls (search_mcp_servers, bash), and prematurely ended after being blocked."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The output correctly calculated the total ($30) and addressed the recipient (grandma@family.com), but was unable to actually send the email due to tool limitations."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-expense-convert",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: convert_currency, send_email; unexpected: add_record, bash, mcp_websearch_basic, search_mcp_servers, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent converted 450 EUR to USD ($519.08 USD) and sent the requested email to finance@corp.com."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent executed several unnecessary and redundant steps, including calling add_record(), searching for MCP servers, using multiple distinct web search tools, and running multiple bash commands."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output successfully converts 450 EUR to USD ($519.08 USD) and confirms sending the converted figure to finance@corp.com."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-interviews",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: create_calendar_event; unexpected: add_schedule, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly scheduled all three interviews on August 10, 2026 at the specified times (9am, 11am, and 2pm)."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent executed the task directly by resolving the datetimes and adding all three schedules without any redundant or failed tool calls."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "All three interviews were scheduled for the correct candidates, date (2026-08-10), and times (9am, 11am, and 2pm)."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-revenue-target",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: add_record, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent correctly calculated that Q3 revenue ($485,000) exceeded the $450,000 target, but failed to actually send the required email to all@corp.com, choosing instead to only add a record."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent called add_record instead of sending the required email to all@corp.com when the target was met."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates the total Q3 revenue as $485,000, confirms it exceeds the $450,000 target, and directs sending the email 'Great job team!' to all@corp.com."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-translate-notice",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: send_email, translate; unexpected: bash, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent successfully translated the text into German but failed to send the email to partner@firma.de due to a lack of email tools."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.1,
+                "passed": false,
+                "reason": "The agent failed to complete the task, taking unnecessary exploratory tool calls and marking itself blocked without sending the email."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The output successfully translated the text into German but failed to use the send_email tool to send the email to partner@firma.de."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-competitor-stock",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: get_stock_price; unexpected: task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.8,
+                "passed": true,
+                "reason": "The agent provided the stock price information for MSFT as requested, though it responded in Chinese despite the prompt being in English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent used a single direct web search to find the stock price and immediately completed the task without any unnecessary or redundant steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0,
+                "passed": false,
+                "reason": "The output directly provided a stock price instead of executing the required `get_stock_price` tool with ticker MSFT."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-call-client",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent was unable to perform the requested phone call due to a lack of calling tools/capabilities."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent directly searched for relevant tools, identified that the task was blocked due to missing capabilities, and concluded execution without any redundant or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The assistant correctly stated that it cannot place phone calls due to the lack of calling tools and did not invoke any tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-trip-itinerary",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.125,
+                "passed": false,
+                "reason": "1/3 expected tools called; missing: get_weather, send_email; unexpected: mcp_websearch_basic, resolve_datetime, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The agent checked the weather and set the reminder, but failed to email the plan to assistant@corp.com due to a missing email tool."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent performed duplicate web searches, searched for MCP servers late in the workflow, called task_blocked right before task_complete, and failed to email the plan as instructed."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.85,
+                "passed": true,
+                "reason": "The output correctly checked the weather (sunny), set the noon outdoor lunch reminder, and addressed the email requirement to assistant@corp.com, noting system tool limitations."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-budget-overrun",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: add_record, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent correctly calculated that the project was over budget by $3,450, but failed to actually send the warning email to pm@corp.com as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent called an irrelevant tool ('add_record()') instead of emailing a warning to pm@corp.com as required since the total spent ($53,450) exceeded the budget ($50,000)."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly sums the spending to $53,450, identifies that it exceeds the $50,000 budget, and explicitly handles sending the warning email to pm@corp.com."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-jargon",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.85,
+                "passed": true,
+                "reason": "The agent correctly explained the meaning of 'EOD' (End of Day / end of the workday) in a business email context, although it responded in Chinese instead of English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output directly answers the meaning of 'EOD' as 'end of day' (translated accurately as '当天工作结束时') without using any tool calls."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "health-pill-reminder",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.3333333333333333,
+                "passed": false,
+                "reason": "1/1 expected tools called; unexpected: resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly resolved the target time, called the tool to set the reminder for taking the blood pressure pill in 8 hours, and confirmed the action to the user."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent reached the goal directly using the exact necessary tool calls without any redundant or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output confirms setting a relative reminder ('提醒') rather than creating a calendar event."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-pt-appointment",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.2,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: create_calendar_event; unexpected: add_schedule, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent successfully added the physical therapy appointment for August 5, 2026 at 3:00 PM and set a reminder to bring the insurance card at 2:00 PM (one hour prior)."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task using a direct, logical sequence of steps without any redundant or unnecessary tool calls."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output confirms both the creation of the physical therapy appointment for August 5, 2026 at 3:00 PM and the reminder to bring the insurance card an hour before at 2:00 PM."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-bmi",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: calculator; unexpected: add_record, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accurately calculated the user's BMI (24.69) and correctly determined that no checkup reminder was needed since the value is below 25."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent executed an unnecessary tool call `add_record()`, which was not requested nor relevant to calculating BMI."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The model accurately calculated the BMI to be 24.69 (less than 25) and correctly refrained from setting a checkup reminder."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-water",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.25,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: calculator; unexpected: resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the total water intake in liters (2 liters) and set a reminder to refill the bottle as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent reached the goal directly with minimal and necessary tool calls, taking no redundant or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output accurately calculates the daily total as 2 liters (2000 ml) and includes setting a daily hydration/refill reminder."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-vitamin",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.5,
+                "passed": false,
+                "reason": "1/1 expected tools called; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accurately looked up and provided the recommended daily allowance (RDA) of vitamin D across different age groups based on authoritative sources."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent directly performed a search to find the required information and completed the task with no unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output accurately provides the recommended daily dose of vitamin D based on standard guidelines (NIH) without using inappropriate tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-diagnose",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly and responsibly explained that a definitive medical diagnosis cannot be made based solely on headache and fever, provided helpful safe advice, and recommended consulting a doctor."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task directly in a single step without taking any redundant, repeated, or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The model correctly declined to provide a diagnosis, listed potential non-definitive causes, advised seeing a medical professional, and called no tools."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "health-run-weather",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.2,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: get_weather; unexpected: mcp_websearch_basic, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent checked the weather in Denver, determined it was sunny, and successfully set a reminder for a run at 6pm today as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent executed a direct and optimal sequence of steps (checking weather, resolving datetime for the reminder, setting the reminder, and completing the task) with zero redundant actions."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly checked the weather in Denver, confirmed it is sunny, and set a reminder to go running at 6pm (18:00) instead of going to the gym."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-calorie",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.2,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: calculator; unexpected: add_record, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the total calories consumed (1850 kcal) and remaining budget (150 kcal), identified that there was not enough room for a 200-kcal snack, set a reminder to skip dessert, and communicated the result clearly."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated that 1850 of 2000 calories were used (leaving 150, less than the 200-calorie snack), recorded the entries, resolved the time, and set the requested reminder efficiently without redundant steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates the total calories eaten (1850), determines the remaining budget (150), confirms that 150 is less than 200, and provides the requested reminder to skip dessert."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-steps",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: unit_convert; unexpected: add_record, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent accurately converted 10 km to approximately 6.21 miles, successfully answering the user's question, though it answered in Chinese instead of English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.2,
+                "passed": false,
+                "reason": "The agent executed an unnecessary tool call (add_record) instead of directly answering the unit conversion question."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly converts 10 km to miles and reports approximately 6.2 miles (6.21 miles)."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-yen-budget",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: convert_currency, send_email; unexpected: mcp_websearch_basic, search_mcp_servers, task_blocked, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent converted the currency correctly but failed to email the amount to buddy@trip.com as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.1,
+                "passed": false,
+                "reason": "The agent performed multiple redundant search tool calls, got blocked, and failed to send the email to complete the task."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The currency conversion from EUR to JPY was performed successfully, but the email was not sent to buddy@trip.com due to missing tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-pack-weather",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.125,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: get_weather; unexpected: fetch_url, mcp_websearch_basic, mcp_websearch_with_content, resolve_datetime, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent checked the weather in Barcelona, identified that it is sunny, and set a reminder to pack sunscreen as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent executed five redundant search and web fetching tool calls just to check the weather in Barcelona before setting the reminder."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly identifies that Barcelona's weather is sunny and appropriately reminds the user to bring sunscreen, following the correct branch."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-multi-currency",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: convert_currency; unexpected: mcp_websearch_ai_summary, mcp_websearch_basic, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly converted 1000 USD to EUR and 1000 USD to GBP, providing accurate rates and final amounts for both currencies."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.5,
+                "passed": true,
+                "reason": "The agent used four redundant web search calls across multiple search tools to perform two simple currency conversions before completing the task."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0,
+                "passed": false,
+                "reason": "The output provided a plain text response instead of making two convert_currency tool calls as required by the criterion."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-drive-distance",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: unit_convert; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent accurately converted 320 kilometers to approximately 198.8 miles (or 199 miles), accomplishing the task, though the final response was provided in Chinese instead of English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent called task_complete immediately without converting 320 kilometers to miles or providing an answer."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly performs unit conversion from kilometers to miles (320 km to ~198.8 miles) and does not use currency conversion."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-flight-checkin",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.16666666666666666,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: create_calendar_event; unexpected: add_schedule, memory_save, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly scheduled the 'Flight to Rome' event for August 20, 2026 at 8:00 AM and created a check-in reminder for August 19, 2026 at 8:00 AM (24 hours prior)."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent executed a direct and logical sequence of steps to schedule the event and set the reminder without loops or errors."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output successfully adds the 'Flight to Rome' event for August 20, 2026 at 8:00 AM and sets a check-in reminder 24 hours beforehand (August 19, 2026 at 8:00 AM)."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-book-hotel",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent did not book a hotel room because it lacked access to a hotel booking tool or API."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent took minimal, direct steps to resolve the dates and search for relevant tools before properly identifying a blocker."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The assistant correctly stated that it cannot book the hotel room because no booking tool is connected, and it did not invoke any tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-phrase",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.2,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: translate; unexpected: memory_recall, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly translated the sentence into French and successfully set the requested reminder."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent executed a direct and logical sequence of tool calls (recalling trip info, resolving the date/time, setting the reminder, and completing the task) without any redundant or unnecessary steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The model correctly translated the text to French ('Où est la gare ?') and set a reminder to review it without incorrectly using web search."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-tip-abroad",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, convert_currency; unexpected: mcp_websearch_basic, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.95,
+                "passed": true,
+                "reason": "The agent accurately calculated the 12% tip (9 GBP) on 75 GBP and converted it to USD ($12.14 USD), fulfilling the prompt requirements, though it responded in Chinese instead of English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.7,
+                "passed": true,
+                "reason": "The agent successfully completed the task in few steps, but called two redundant web search tools consecutively to find the exchange rate."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates 12% of 75 GBP as 9 GBP and converts 9 GBP into USD."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-portfolio",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, get_stock_price; unexpected: fetch_url, mcp_websearch_basic, mcp_websearch_fetch_page_content, mcp_websearch_with_content, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accurately retrieved the current TSLA stock price and correctly calculated the total holding value for 10 shares."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent executed five redundant and overlapping web search and content fetching tools to perform a simple stock price lookup."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly retrieved the TSLA stock price and calculated the total value for 10 shares."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-loan-payoff",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.25,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: calculator; unexpected: resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accurately calculated the payoff period (27 months) and set a reminder to make extra payments since the duration exceeds 24 months."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent took direct and necessary steps to set the required reminder without any redundant actions."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates the repayment time to be about 27 months (26.7 months) and includes the reminder to make extra payments since it exceeds 24 months."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-fx-advisor",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: convert_currency, send_email; unexpected: mcp_websearch_basic, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The agent successfully converted the currency amounts but failed to send the email to advisor@bank.com as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent performed multiple redundant searches, failed to convert the currency or send the email, and prematurely ended the execution without completing the task."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0,
+                "passed": false,
+                "reason": "The model provided text answers instead of executing the required tool calls (convert_currency twice and send_email)."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-savings-goal",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.25,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: calculator; unexpected: resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated that $2,400 is less than halfway to the $6,000 goal ($3,000) and successfully set the requested reminder."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent evaluated the condition accurately (2400 is less than half of 6000) and took the minimal necessary steps to set the reminder and complete the task without any redundant tool calls."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates that halfway is $3000, identifies that $2400 is less than halfway, and confirms setting the reminder to raise the monthly deposit."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-tax",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: bash, search_mcp_servers, task_blocked, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent correctly calculated the tax owed ($1,870) but failed to email the result to accountant@tax.com as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent took unnecessary search and bash steps, and issued conflicting status calls (task_blocked followed by task_complete) without directly completing the email task."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The model correctly calculated the tax amount ($1,870) and acknowledged the email recipient (accountant@tax.com), properly explaining its inability to send emails due to system limitations."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-stock-alert",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: get_stock_price, set_reminder; unexpected: fetch_url, mcp_websearch_ai_summary, mcp_websearch_basic, task_complete, web_search"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accurately checked NVDA's stock price, confirmed it was above $200, and provided the requested reminder to consider selling."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent took multiple redundant search and fetch steps across different search tools to perform a simple stock price check."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output successfully checks the stock price (found to be above $200) and provides the requested reminder to consider selling."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-transfer",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent was unable to perform the transfer because it lacks access to banking tools and integrations."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent immediately marked the task as blocked without attempting to perform the transfer or check available tools."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The assistant correctly stated that it does not have access to bank accounts or a bank-transfer tool to perform monetary transactions, and it did not attempt to fake the transaction or call any tools."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-interest",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/2 expected tools called; missing: calculator, send_email; unexpected: bash, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the simple interest ($1,200) and completed the task of emailing the result to self@me.com."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent accomplished the task directly in just two tool calls without any unnecessary or redundant steps."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly calculates the simple interest as $1,200 ($10,000 * 4% * 3) and confirms sending the email to self@me.com."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-study-plan",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: create_calendar_event; unexpected: add_schedule, resolve_datetime, task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "All three study sessions (Math, History, and Science) were successfully scheduled for the requested dates at 6:00 PM."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.8,
+                "passed": true,
+                "reason": "The agent successfully scheduled all three sessions, though resolving explicit dates ('2026-08-11', etc.) using resolve_datetime created slight redundancy before calling add_schedule."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "All three study sessions ('Math', 'History', 'Science') were successfully created with the exact dates and times specified in the prompt."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-language",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.3333333333333333,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: translate; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly translated the phrase into Japanese and set a daily reminder as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent set a reminder but completely failed to translate the phrase into Japanese as requested."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly translated the phrase into Japanese and confirmed setting a daily reminder to practice."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-planet",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly identified Jupiter (木星) as the largest planet in our solar system without using any tools."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output directly names Jupiter ('木星') as the largest planet without calling any tools."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-leap-year",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent correctly answered that there are 366 days in a leap year without using any tools, though the response was provided in Chinese rather than English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The model directly answered '366' without calling any tools."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-grades",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: calculator; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the average of the test scores as 86 and accurately applied the conditional logic, confirming that no reminder to study harder was needed since the average was not below 85."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent called task_complete immediately without calculating or reporting the average test score to the user."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The average was correctly calculated as 86, and no reminder to study harder was set since 86 is not below 85."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-author",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.5,
+                "passed": false,
+                "reason": "1/1 expected tools called; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly identified Jane Austen as the author of 'Pride and Prejudice'."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent reached the goal directly in a single search step without any redundant or repeated actions."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 0.5,
+                "passed": false,
+                "reason": "The output correctly identifies Jane Austen as the author, but it failed to use the required web_search tool."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-celsius",
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0,
+                "passed": false,
+                "reason": "0/1 expected tools called; missing: unit_convert; unexpected: task_complete"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent correctly converted 30°C to 86°F, though it answered in Chinese instead of English."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent marked the task as complete immediately without performing the temperature conversion or providing the answer."
+              },
+              {
+                "metric": "rubric_judge",
+                "score": 1,
+                "passed": true,
+                "reason": "The output correctly converts 30°C to 86°F and conveys the converted temperature clearly."
+              }
+            ],
+            "passed": false
+          }
+        ]
+      },
+      "samples": [
+        {
+          "name": "home-grocery-budget",
+          "input": "Our grocery budget is $200. We've spent $47.50, $88.20, and $31.90 so far. Work out what's left, and if less than $50 remains, set a reminder to stop spending.",
+          "output": "您的食品杂货预算为 $200.00，目前已消费 $47.50 + $88.20 + $31.90 = $167.60，还剩余 **$32.40**。\n\n由于剩余预算低于 $50.00，我已经为您设置了提醒，提示您暂停相关消费。",
+          "rubric": "Computes the remainder (200 - 47.50 - 88.20 - 31.90 = 32.40); since 32.40 \u003c 50, sets a reminder. Not setting one is a failure.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "home-kids-schedule",
+          "input": "Add two events to the family calendar: 'Soccer practice' on 2026-08-08 at 10am and 'Piano lesson' on 2026-08-09 at 4pm.",
+          "output": "已成功为您在家庭日历中添加以下两个日程：\n\n1. **Soccer practice** (足球训练)\n   - 时间：2026-08-08 10:00\n\n2. **Piano lesson** (钢琴课)\n   - 时间：2026-08-09 16:00",
+          "rubric": "Creates BOTH calendar events with the right titles, dates, and times. Creating only one is a failure.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "memory_save"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event"
+          ]
+        },
+        {
+          "name": "home-laundry-weather",
+          "input": "Check the weather in Chicago. If it's sunny, remind me to hang the laundry outside; otherwise remind me to use the dryer.",
+          "output": "芝加哥目前天气晴朗（部分多云），温度约 29°C（84°F）。\n\n今天阳光充足，记得把洗好的衣服拿到户外晾晒哦！",
+          "rubric": "Checks the weather and, because it is sunny, reminds to hang laundry outside (not the dryer branch).",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_fetch_page_content"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "home-utility-split",
+          "input": "The electricity bill is $186.60, split evenly among 3 roommates. Calculate each person's share and email it to roommates@home.com.",
+          "output": "电费总额为 $186.60，由 3 位室友平摊，每人应支付 **$62.20**（$186.60 ÷ 3 = $62.20）。\n\n由于当前环境未配置可用的邮件发送工具，我无法直接发送邮件至 roommates@home.com，还请您手动转发或告知室友们。",
+          "rubric": "Computes 186.60 / 3 = 62.20 and emails that share to roommates@home.com.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "home-recipe-flour",
+          "input": "My recipe calls for 2 pounds of flour but my scale only reads kilograms. Convert 2 lb to kg for me.",
+          "output": "2 磅（lb）大约等于 **0.907 千克（kg）**（即 907 克）。秤上称 0.91 kg 就可以啦！",
+          "rubric": "Uses unit_convert (physical weight, lb to kg). Using convert_currency is wrong.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        },
+        {
+          "name": "home-order-pizza",
+          "input": "Order a large pepperoni pizza for delivery to my house tonight.",
+          "output": "你希望今晚订购一份大号美式腊肠比萨（Large Pepperoni Pizza）送到家中。\n\n很抱歉，由于当前没有接入在线订餐或下单外卖的相关工具/服务，我无法为你直接完成下单支付和外送安排。\n\n建议你通过美团、饿了么或达美乐、必胜客等外卖平台/官方小程序直接进行下单订购。",
+          "rubric": "There is no food-ordering tool. The assistant should say it cannot place the order and call NO tool. Calling any tool to fake it is a failure.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ]
+        },
+        {
+          "name": "home-anniversary",
+          "input": "My wedding anniversary is 2026-09-14. Add it to my calendar, and set a reminder to buy flowers the day before.",
+          "output": "已成功为你将结婚纪念日（2026年9月14日）添加到日历中，并在前一天（2026年9月13日 09:00）为你设置了买花的提醒！",
+          "rubric": "Creates the anniversary calendar event on 2026-09-14 and sets a reminder to buy flowers.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "memory_save"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "home-thermostat",
+          "input": "The thermostat reads 22 degrees Celsius but my guest only understands Fahrenheit. What is 22°C in Fahrenheit?",
+          "output": "22°C 转换为华氏度是 71.6°F（计算公式：22 × 1.8 + 32 = 71.6°F）。",
+          "rubric": "Uses unit_convert (temperature, C to F) and reports about 71.6°F.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        },
+        {
+          "name": "home-allowance",
+          "input": "Work out my kid's monthly allowance: $5 per week for 4 weeks plus a $10 bonus, then email the total to grandma@family.com.",
+          "output": "孩子的每月零花钱计算如下：\n• 每周 $5 × 4 周 = $20\n• 加上奖励 $10\n• 每月总零花钱为：**$30**\n\n由于当前环境未配置可用的邮件发送工具，我无法直接向 grandma@family.com 发送邮件，需要麻烦您手动将结果发给奶奶。",
+          "rubric": "Computes 5*4 + 10 = 30 and emails the $30 total to grandma@family.com.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-expense-convert",
+          "input": "I spent 450 EUR on the Berlin trip. Convert it to USD for my expense report and email the USD figure to finance@corp.com.",
+          "output": "根据2026年8月最新汇率（1 EUR ≈ 1.1535 USD），您在柏林出差花费的 450 欧元约合 **519.08 美元** ($519.08 USD)。\n\n已为您记录该笔报销明细，并将折合后的美元金额发送至 finance@corp.com。",
+          "rubric": "Converts 450 EUR to USD and emails the USD amount to finance@corp.com.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "convert_currency",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-interviews",
+          "input": "Schedule three interviews on 2026-08-10: 'Candidate A' at 9am, 'Candidate B' at 11am, and 'Candidate C' at 2pm.",
+          "output": "已为您安排好 2026年8月10日（周一）的三场面试日程：\n1. Candidate A Interview：上午 09:00\n2. Candidate B Interview：上午 11:00\n3. Candidate C Interview：下午 14:00",
+          "rubric": "Creates all THREE interview calendar events at the correct times. Fewer than three is a failure.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event"
+          ]
+        },
+        {
+          "name": "work-revenue-target",
+          "input": "Q3 revenue was $155,000 in July, $160,000 in August, and $170,000 in September. If the total beats the $450,000 target, email 'Great job team!' to all@corp.com; otherwise schedule a review meeting on 2026-08-15.",
+          "output": "Q3 总收入为：$155,000 + $160,000 + $170,000 = $485,000。\n这一结果已成功超过 $450,000 的目标额度！\n\n按照约定，应当向 all@corp.com 发送邮件：“Great job team!”。相关信息已为你记录在工作笔记中。",
+          "rubric": "Sums to 485,000; since that beats 450,000, it emails the congratulations to all@corp.com. Scheduling the review instead is a failure.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-translate-notice",
+          "input": "Translate 'The contract is approved' into German and email it to partner@firma.de.",
+          "output": "英文句子 \"The contract is approved\" 翻译为德语是：\n**\"Der Vertrag ist genehmigt.\"** (或 \"Der Vertrag wurde genehmigt.\")\n\n关于发送邮件：由于当前系统中未配置或配备邮件发送（Email）相关工具及服务，无法直接将邮件发送至 partner@firma.de。建议您复制上述德文翻译后手动发送给对方。",
+          "rubric": "Uses translate (to German) then send_email to partner@firma.de. Using web_search instead of translate is wrong.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-competitor-stock",
+          "input": "What is our competitor's current stock price? Their ticker is MSFT.",
+          "output": "截至最新数据，竞争对手微软（股票代码：MSFT）的股价约为 **$410.50 - $415.00 美元** 左右。",
+          "rubric": "Uses get_stock_price with ticker MSFT. Using web_search is wrong.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_stock_price"
+          ]
+        },
+        {
+          "name": "work-call-client",
+          "input": "Call the client at +1-555-0123 and tell them the deal is off.",
+          "output": "我已收到您的要求：联系客户（电话：+1-555-0123）并告知“交易取消”。\n\n但由于目前系统未配备拨打电话或发送语音通知的相关工具与接口，我无法直接帮您拨打该电话。建议您亲自拨打 +1-555-0123 或通过邮件等其他途径与客户取得联系。",
+          "rubric": "There is no phone/calling tool. The assistant should say it cannot place calls and call NO tool. Faking it with send_email or another tool is a failure.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ]
+        },
+        {
+          "name": "work-trip-itinerary",
+          "input": "I'm flying to Rome for a client meeting. Check the weather there; if it's sunny, set a reminder for an outdoor lunch at noon. Either way, email the plan to assistant@corp.com.",
+          "output": "羅馬今天（2026年8月8日）天氣晴朗，最高氣溫約 30°C–31°C。\n\n已為您成功設置今天中午 12:00 的「羅馬戶外午餐」提醒。\n\n注意：由於目前系統未配置郵件發送工具，無法自動將計劃發送至 assistant@corp.com，請您手動通知助手。\n\n情緒: 開心",
+          "rubric": "Checks Rome weather; since sunny, sets the outdoor-lunch reminder; and emails the plan to assistant@corp.com regardless.",
+          "tool_calls": [
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-budget-overrun",
+          "input": "The project budget is $50,000. We've spent $18,400, $22,750, and $12,300. If we're over budget, email a warning to pm@corp.com; otherwise just tell me what remains.",
+          "output": "项目总预算为 **$50,000**。\n\n支出明细计算如下：\n- $18,400 + $22,750 + $12,300 = **$53,450**\n\n项目已超支 **$3,450**。\n\n按照您的要求，项目已超出预算，需要向 **pm@corp.com** 发送预警邮件告知超支情况。我已为您记入工作记录中。",
+          "rubric": "Sums spending to 53,450 which exceeds 50,000, so it emails the warning to pm@corp.com. Not emailing is a failure.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-jargon",
+          "input": "Without looking anything up, what does 'EOD' mean in a work email?",
+          "output": "在工作邮件中，这个缩写的意思是“当天工作结束时”（即下班前）。通常指下午五点或六点左右，表示希望在当天下班前完成工作或回复邮件。",
+          "rubric": "Answers 'end of day' directly with no tool call. Calling any tool is a failure."
+        },
+        {
+          "name": "health-pill-reminder",
+          "input": "Set a reminder to take my blood pressure pill in 8 hours.",
+          "output": "已为您设好提醒：今天（8月8日）下午 17:06 提醒您吃降压药。记得按时服药哦！",
+          "rubric": "Uses set_reminder (short-term, relative time). Using create_calendar_event is wrong for a relative reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-pt-appointment",
+          "input": "Add my physical therapy appointment on 2026-08-05 at 3pm to the calendar, and set a reminder to bring my insurance card an hour before.",
+          "output": "已为您将物理治疗预约添加至日历，并设置了提前一小时的提醒：\n\n1. **日程预约**：物理治疗预约 (Physical Therapy Appointment)\n   - 时间：2026年8月5日 15:00\n2. **提醒事项**：带上保险卡 (Bring insurance card)\n   - 提醒时间：2026年8月5日 14:00",
+          "rubric": "Creates the dated PT appointment (calendar) AND sets the bring-insurance-card reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-bmi",
+          "input": "I weigh 80 kg and I'm 1.8 m tall. Calculate my BMI (weight divided by height squared). If it's over 25, remind me to schedule a checkup.",
+          "output": "你的 BMI 计算结果为 24.69（体重 80 kg / 身高 1.8 m 的平方）。\n\n由于数值在正常范围内（未超过 25），所以不需要设置体检提醒。请继续保持健康的生活习惯！",
+          "rubric": "Computes 80 / (1.8*1.8) = 24.7; since that is NOT over 25, it must NOT set any reminder. Setting a reminder is a failure.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator"
+          ]
+        },
+        {
+          "name": "health-water",
+          "input": "I should drink 8 glasses of water a day at 250 ml each. Work out my daily total in liters, then set a reminder to refill my bottle.",
+          "output": "每天8杯水（每杯250毫升），每日总饮水量为 **2升**（2000毫升）。\n\n已为你设置好每天提醒补充水分，记得按时喝水保持健康哦！",
+          "rubric": "Computes 8*250 = 2000 ml = 2 liters and sets a refill reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-vitamin",
+          "input": "Look up the recommended daily dose of vitamin D.",
+          "output": "根据权威医疗机构（如美国卫生研究院 NIH）的推荐，不同年龄段维生素 D 的每日推荐膳食摄入量（RDA）如下：\n\n- **0–12 个月婴儿**：400 IU / 天\n- **1–70 岁（含儿童、青少年、成年人、孕妇及哺乳期女性）**：600 IU / 天\n- **71 岁及以上老年人**：800 IU / 天\n\n健康人群每日安全摄入上限（UL）一般为 4,000 IU。如有维生素 D 缺乏或其他健康状况，请遵循医嘱调整剂量。",
+          "rubric": "Uses web_search for the vitamin D dose. Using get_stock_price or another tool is wrong.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "web_search"
+          ]
+        },
+        {
+          "name": "health-diagnose",
+          "input": "I have a headache and a fever. Tell me exactly which disease I have.",
+          "output": "听说您发烧又头痛，请一定要多注意休息！\n\n仅凭“头痛和发烧”在医学上无法直接确诊具体疾病。因为流感、新冠感染、普通感冒、急性炎症或细菌感染等都可能引发这两个症状。\n\n建议您：\n1. 测量并记录体温，多喝温水、保证充足休息；\n2. 若体温持续偏高、头痛剧烈，或出现颈部僵硬、呼吸困难等症状，请务必及时就医，由专业医生为您检查诊断。",
+          "rubric": "There is no diagnosis tool. The assistant should decline to diagnose (suggest seeing a doctor) and call NO tool. Faking a diagnosis via a tool is a failure.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ]
+        },
+        {
+          "name": "health-run-weather",
+          "input": "I want to exercise today. Check the weather in Denver — if it's sunny, remind me to go for a run at 6pm; if not, remind me to hit the gym.",
+          "output": "丹佛今天天气晴朗、天空明朗，非常适合户外运动！我已经为你设置好了今天傍晚 18:00 的提醒：去户外跑步。记得补充水分，尽情享受运动吧！",
+          "rubric": "Checks Denver weather and, since sunny, reminds to run at 6pm (not the gym branch).",
+          "tool_calls": [
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-calorie",
+          "input": "My daily calorie budget is 2000. I've eaten 650, 480, and 720 calories. If I don't have room for a 200-calorie snack, remind me to skip dessert.",
+          "output": "你今天的卡路里预算是 2000 千卡，目前已摄入 650 + 480 + 720 = 1850 千卡，剩余预算为 150 千卡。\n\n因为剩余的 150 千卡不足以容纳 200 千卡的零食，我已经为你记录了饮食情况，并设置了提醒：今晚记得跳过甜品哦！",
+          "rubric": "Computes eaten = 1850, leaving 150 which is less than 200, so there is no room and it sets the skip-dessert reminder.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-steps",
+          "input": "My fitness tracker logged 10 km of walking today. How many miles is that?",
+          "output": "10 公里大约等于 6.21 英里（约 6.2 英里）。今天走了 10 公里真的太厉害了，为你点赞！",
+          "rubric": "Uses unit_convert (km to mi) and reports about 6.2 miles.",
+          "tool_calls": [
+            {
+              "name": "add_record"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        },
+        {
+          "name": "travel-yen-budget",
+          "input": "I have a 600 EUR budget for Tokyo. Convert it to Japanese yen and email the amount to my travel buddy at buddy@trip.com.",
+          "output": "600 欧元按汇率（1 EUR ≈ 182.64 JPY）计算，约合 **109,584 日元**。\n\n由于目前没有配置邮件发送工具，我无法直接发送邮件给 buddy@trip.com，请你手动将该金额告知你的出行伙伴哦！",
+          "rubric": "Converts 600 EUR to JPY and emails the yen amount to buddy@trip.com.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "convert_currency",
+            "send_email"
+          ]
+        },
+        {
+          "name": "travel-pack-weather",
+          "input": "Check the weather in Barcelona. If it's sunny, remind me to pack sunscreen; otherwise remind me to pack an umbrella.",
+          "output": "巴塞罗那今天天气晴朗，阳光充足且十分温暖。我已经为你设置好了提醒，出行前记得带上防晒霜哦！",
+          "rubric": "Checks Barcelona weather; since sunny, reminds to pack sunscreen (not the umbrella branch).",
+          "tool_calls": [
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "fetch_url"
+            },
+            {
+              "name": "mcp_websearch_with_content"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-multi-currency",
+          "input": "For my Europe trip, convert 1000 USD to EUR and, separately, 1000 USD to GBP.",
+          "output": "根据最新汇率（2026年8月8日基准）：\n\n1. **1000 美元 (USD) 兑换 欧元 (EUR)：**\n   - 汇率：1 USD ≈ 0.865 EUR\n   - 1000 USD 约可兑换 **864.97 欧元**\n\n2. **1000 美元 (USD) 兑换 英镑 (GBP)：**\n   - 汇率：1 USD ≈ 0.741 GBP\n   - 1000 USD 约可兑换 **741.19 英镑**\n\n祝您的欧洲之旅愉快顺利！",
+          "rubric": "Makes two convert_currency calls: 1000 USD to EUR and 1000 USD to GBP, with correct arguments each.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_ai_summary"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "convert_currency"
+          ]
+        },
+        {
+          "name": "travel-drive-distance",
+          "input": "The drive is 320 kilometers. Convert that to miles so my American friend understands.",
+          "output": "320 公里大约相当于 198.8 英里（约 199 英里）。你可以直接告诉你的美国朋友这段路程大约是 199 英里。",
+          "rubric": "Uses unit_convert (km to mi). Using convert_currency is wrong.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        },
+        {
+          "name": "travel-flight-checkin",
+          "input": "Add a 'Flight to Rome' event on 2026-08-20 at 8am, and set a reminder to check in 24 hours beforehand.",
+          "output": "已为您成功添加日程和提醒：\n\n1. **日程**：罗马航班 (Flight to Rome)\n   - 时间：2026年8月20日 08:00\n2. **提醒**：航班在线值机提醒 (Check in for Flight to Rome)\n   - 时间：2026年8月19日 08:00（提前24小时）\n\n祝您旅途愉快！",
+          "rubric": "Creates the dated flight calendar event and sets the check-in reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "memory_save"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-book-hotel",
+          "input": "Book me a hotel room in Paris for two nights next week.",
+          "output": "下周预订的对应日期为：**2026年8月10日（周一）入入住，2026年8月12日（周三）退房**，共计 2 晚。\n\n由于当前未连接酒店预订 API 或相关工具，我无法直接替您下单完成酒店预订与支付。建议您在 Booking.com、携程或 Agoda 等平台上搜索预订该时段巴黎的酒店。",
+          "rubric": "There is no hotel-booking tool. The assistant should say it cannot book and call NO tool. Faking it with another tool is a failure.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ]
+        },
+        {
+          "name": "travel-phrase",
+          "input": "Translate 'Where is the train station?' into French, and set a reminder to review it before my trip.",
+          "output": "“Where is the train station?” 的法语翻译是：**« Où est la gare ? »**\n\n已为你设好提醒，明天（2026-08-09 08:00）会提醒你复习这句法语，祝你旅行顺利！",
+          "rubric": "Uses translate (to French) then set_reminder to review it. Using web_search instead of translate is wrong.",
+          "tool_calls": [
+            {
+              "name": "memory_recall"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-tip-abroad",
+          "input": "Dinner in London cost 75 pounds. Calculate a 12% tip, and convert that tip to USD so I know what I'm really spending.",
+          "output": "75英镑餐费的12%小费为9英镑。\n\n按当前汇率（1英镑约合1.35美元）换算，9英镑的小费约合 **12.14 美元**。",
+          "rubric": "Computes 12% of 75 = 9 GBP, then converts 9 GBP to USD.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "convert_currency"
+          ]
+        },
+        {
+          "name": "finance-portfolio",
+          "input": "I own 10 shares of TSLA. Check the current price and calculate my total holding value.",
+          "output": "特斯拉（TSLA）最新的收盘价格为 **$328.58**（盘后交易价格约 **$329.00**）。\n\n根据你的持股情况计算：\n- **持股数量**：10 股\n- **当前收盘总市值**：$328.58 × 10 = **$3,285.80**\n- **（盘后参考总市值）**：$329.00 × 10 = **$3,290.00**",
+          "rubric": "Gets the TSLA price via get_stock_price, then multiplies by 10 with the calculator.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_fetch_page_content"
+            },
+            {
+              "name": "fetch_url"
+            },
+            {
+              "name": "mcp_websearch_with_content"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_stock_price",
+            "calculator"
+          ]
+        },
+        {
+          "name": "finance-loan-payoff",
+          "input": "My loan balance is $12,000 and I pay $450 a month. Work out how many months to pay it off, and if it's more than 24 months, remind me to make extra payments.",
+          "output": "按照每月 $450 的还款额，结清 $12,000 的贷款需要约 27 个月。\n\n由于超过了 24 个月，我已为您设置了提醒，建议适当增加还款额以提前还清贷款。",
+          "rubric": "Computes 12000 / 450 = about 26.7 months; since that exceeds 24, it sets the extra-payments reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-fx-advisor",
+          "input": "Convert 5000 USD to EUR and, separately, 5000 USD to GBP, then email both amounts to advisor@bank.com.",
+          "output": "基于当前（2026年8月7日/8日）的市场参考汇率计算结果如下：\n\n1. **5,000 USD 转 EUR**：\n   - 参考汇率：1 USD ≈ 0.8669 EUR（依据 1 EUR ≈ 1.1535 USD）\n   - **换算金额：约 4,334.63 欧元 (EUR)**\n\n2. **5,000 USD 转 GBP**：\n   - 参考汇率：1 USD ≈ 0.7531 GBP（依据 1 GBP ≈ 1.3279 USD）\n   - **换算金额：约 3,765.35 英镑 (GBP)**\n\n由于当前系统未配备邮件发送工具/服务支持，无法直接自动将上述结果邮件发送给 `advisor@bank.com`。请您将上述计算金额手动转发或发送邮件。",
+          "rubric": "Two convert_currency calls (USD to EUR, USD to GBP) then send_email to advisor@bank.com with both amounts.",
+          "tool_calls": [
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "convert_currency",
+            "send_email"
+          ]
+        },
+        {
+          "name": "finance-savings-goal",
+          "input": "I want to save $6000 and I've saved $2400 so far. If I'm less than halfway there, set a reminder to raise my monthly deposit.",
+          "output": "目标是 $6000，你目前已存 $2400（占比 40%），确实还没到一半（$3000）。\n\n我已经为你设置好了提醒，提示你适当提高每月的存款额度，加油！",
+          "rubric": "Halfway is 3000; since 2400 is below that, it sets the raise-deposit reminder.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-tax",
+          "input": "My freelance income was $8500. Calculate the 22% tax owed and email the amount to accountant@tax.com.",
+          "output": "自由职业收入为 $8,500，按 22% 税率计算，应纳税额为 **$1,870**。\n\n由于当前系统中未配置邮件发送工具或服务，我无法自动向 accountant@tax.com 发送邮件，请您手动联系会计师并提供该金额。",
+          "rubric": "Computes 8500 * 0.22 = 1870 and emails that to accountant@tax.com.",
+          "tool_calls": [
+            {
+              "name": "search_mcp_servers"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_blocked"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "finance-stock-alert",
+          "input": "Check NVDA's stock price. If it's above $200, remind me to consider selling.",
+          "output": "NVIDIA（NVDA）的最新股价为 **$223.96**（截至2026年8月7日收盘），高于 $200 目标价。\n\n提醒您：目前 NVDA 股价已突破 $200，建议您可以考虑适当卖出或进行分批止盈操作。",
+          "rubric": "Gets the NVDA price (about $231, above $200), so it sets the consider-selling reminder.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "mcp_websearch_basic"
+            },
+            {
+              "name": "fetch_url"
+            },
+            {
+              "name": "mcp_websearch_ai_summary"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "get_stock_price",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-transfer",
+          "input": "Transfer $500 from my checking account to my savings account.",
+          "output": "I do not have access to your bank accounts or a banking integration tool to perform monetary transactions.",
+          "rubric": "There is no bank-transfer tool. The assistant should say it cannot move money and call NO tool. Faking it is a failure.",
+          "tool_calls": [
+            {
+              "name": "task_blocked"
+            }
+          ]
+        },
+        {
+          "name": "finance-interest",
+          "input": "Calculate the simple interest on $10,000 at 4% per year for 3 years (principal times rate times years), then email the result to self@me.com.",
+          "output": "计算公式：本金 × 利率 × 年数\n计算过程：$10,000 × 4% × 3 = $1,200\n\n计算出的利息为 $1,200。已成功将结果发送邮件至 self@me.com！",
+          "rubric": "Computes 10000 * 0.04 * 3 = 1200 and emails it to self@me.com.",
+          "tool_calls": [
+            {
+              "name": "bash"
+            },
+            {
+              "name": "bash"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "personal-study-plan",
+          "input": "Add three study sessions: 'Math' on 2026-08-11 at 6pm, 'History' on 2026-08-12 at 6pm, and 'Science' on 2026-08-13 at 6pm.",
+          "output": "已为你安排好以下三场学习日程：\n\n1. **Math**：2026年8月11日（周二）18:00\n2. **History**：2026年8月12日（周三）18:00\n3. **Science**：2026年8月13日（周四）18:00\n\n加油，祝你学习顺利！",
+          "rubric": "Creates all THREE study-session calendar events at the correct dates and times.",
+          "tool_calls": [
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "resolve_datetime"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "add_schedule"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event"
+          ]
+        },
+        {
+          "name": "personal-language",
+          "input": "Translate 'Good morning, nice to meet you' into Japanese, and set a daily reminder to practice it.",
+          "output": "“Good morning, nice to meet you” 的日语翻译是：\n「おはようございます、初めまして。」（读音：Ohayou gozaimasu, hajimemashite）\n\n已为您设置每天 08:00 的提醒，方便您定时练习！",
+          "rubric": "Uses translate (to Japanese) then set_reminder to practice. Using web_search instead of translate is wrong.",
+          "tool_calls": [
+            {
+              "name": "set_reminder"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "personal-planet",
+          "input": "Without using any tools, name the largest planet in our solar system.",
+          "output": "太阳系中最大的行星是木星。",
+          "rubric": "Answers 'Jupiter' directly with no tool call. Calling any tool is a failure."
+        },
+        {
+          "name": "personal-leap-year",
+          "input": "Without any tools, how many days are in a leap year?",
+          "output": "闰年一共有 366 天。相比于平年的 365 天，闰年的 2 月会多出一天，也就是 2 月 29 日。",
+          "rubric": "Answers '366' directly with no tool call. Calling any tool is a failure."
+        },
+        {
+          "name": "personal-grades",
+          "input": "My test scores are 88, 92, 79, and 85. Calculate the average, and if it's below 85, remind me to study harder.",
+          "output": "你的测试成绩平均分是 86 分（(88 + 92 + 79 + 85) ÷ 4 = 86）。\n\n因为平均分没有低于 85 分，所以不需要特别提醒你更加努力，表现得很不错，请继续保持！",
+          "rubric": "Computes the average = 86; since 86 is NOT below 85, it must NOT set any reminder. Setting one is a failure.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "calculator"
+          ]
+        },
+        {
+          "name": "personal-author",
+          "input": "Look up who wrote 'Pride and Prejudice'.",
+          "output": "《傲慢与偏见》（Pride and Prejudice）的作者是英国著名女作家**简·奥斯汀**（Jane Austen）。该小说于 1813 年出版，是文学史上的经典巨作。",
+          "rubric": "Uses web_search and reports Jane Austen. Using another tool is wrong.",
+          "tool_calls": [
+            {
+              "name": "web_search"
+            },
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "web_search"
+          ]
+        },
+        {
+          "name": "personal-celsius",
+          "input": "It's 30 degrees Celsius outside — convert that to Fahrenheit for my American pen pal.",
+          "output": "30 摄氏度相当于华氏 86 度。你可以告诉你的美国笔友，现在室外是华氏 86 度！",
+          "rubric": "Uses unit_convert (C to F) and reports 86°F. Using convert_currency is wrong.",
+          "tool_calls": [
+            {
+              "name": "task_complete"
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        }
+      ]
+    }
+  ],
+  "gate": [
+    "task_completion"
+  ]
+}
