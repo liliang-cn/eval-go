@@ -10,6 +10,37 @@ tag messages and feature areas rather than individual commits.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-15
+
+### Added
+
+- **AgentBench** (`agentbench/`) — a tool-calling benchmark built on `evalgo bench`,
+  promoted from an example to a first-class part of the repo. A curated 30-task
+  set (`tasks/core-30.json`) across home / work / health / travel / finance /
+  personal, weighted toward the failure modes that actually separate agents:
+  restraint (8), conditional orchestration (10), long chains (6).
+- A ten-tool benchmark environment defined once in `agentbench/tools/`, including
+  four deliberate distractors (`unit_convert` vs `convert_currency`,
+  `get_stock_price` vs `web_search`, `set_reminder` vs `create_calendar_event`).
+- `cmd/benchmcp` — serves those tools over **MCP stdio**, so an agent that brings
+  its own runtime can be scored on the same tool set as a raw model. Without it
+  `tool_correctness` cannot tell "picked the wrong tool" from "was offered a
+  different one". Verified with superai (agent-go) and superleo (harness-rs).
+- Adapters for agents under test: `superai`, `superleo`, `dsh` (DeepSeek
+  Harness), plus guest-framework adapters for LangGraph, CrewAI, smolagents and
+  qi-harness.
+- `docs/overview.md` — the two-layer model (score an output you bring vs. drive
+  an agent to produce one) and the limits of each.
+
+### Fixed
+
+- Guest tool suite survives a busy shared gateway; `web_search` no longer comes
+  back empty on it.
+
+### Changed
+
+- `llmjudge` migrated to agent-go v3.6.0.
+
 ## [0.4.0] - 2026-06-28
 
 ### Added
