@@ -114,6 +114,7 @@ func newBenchCmd() *cobra.Command {
 		cache       string
 		costIn      float64
 		costOut     float64
+		runs        int
 	)
 	cmd := &cobra.Command{
 		Use:   "bench",
@@ -182,6 +183,7 @@ func newBenchCmd() *cobra.Command {
 				Gate:        gateNames,
 				Concurrency: concurrency,
 				Timeout:     timeout,
+				Runs:        runs,
 				OnResult: func(target string, task evalgo.Task, s evalgo.Sample, err error) {
 					status := "ok"
 					if err != nil {
@@ -195,6 +197,7 @@ func newBenchCmd() *cobra.Command {
 
 			fmt.Fprintln(cmd.OutOrStdout(), "\n=== AGENT COMPARISON ===")
 			report.RenderGrid(cmd.OutOrStdout())
+			report.WriteStats(cmd.OutOrStdout())
 			if meter != nil {
 				u := meter.Usage()
 				fmt.Fprintf(cmd.ErrOrStderr(), "\njudge: %d calls, ~%d tokens, %.1fs", u.Calls, u.TotalTokens, u.JudgeSeconds)
@@ -221,6 +224,7 @@ func newBenchCmd() *cobra.Command {
 	f.StringVar(&judgeMode, "judge", "env", `judge mode: "env" (OpenAI-compatible via LLM_* env) or "none"`)
 	f.StringVarP(&out, "out", "o", "", "write the full comparison report (JSON) here")
 	f.IntVar(&concurrency, "concurrency", 1, "tasks run in parallel per agent")
+	f.IntVar(&runs, "runs", 1, "repeat the whole comparison N times and report pass@1 / pass@k / pass^k with the run-to-run spread; one run cannot separate close agents")
 	f.Float64Var(&rps, "rps", 4, "judge rate limit (requests/sec); <=0 disables")
 	f.Float64Var(&threshold, "threshold", 0.5, "pass threshold for judge metrics")
 	f.DurationVar(&timeout, "timeout", 8*time.Minute, "per-task wall-clock timeout")

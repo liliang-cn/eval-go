@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -70,43 +71,298 @@ type Comparison struct {
 	Concurrency int
 	Timeout     time.Duration
 	OnResult    func(target string, task Task, s Sample, err error)
+
+	// Runs repeats the whole comparison this many times (default 1). An agent is
+	// not deterministic: the same target, tasks, tools, model and judge can score
+	// 68 on one pass and 51 on the next, because a five-step chain that drifts
+	// once loses the whole task. A single pass therefore cannot rank agents whose
+	// true scores are close — the ordering it produces is mostly noise.
+	//
+	// With Runs > 1 each pass is scored separately and Stats() reports the mean
+	// and spread, so "A beat B" can be checked against how far either moves on
+	// its own.
+	Runs int
 }
 
 // TargetReport is one agent's scored results across all tasks.
 type TargetReport struct {
 	Name    string   `json:"name"`
+	Run     int      `json:"run,omitempty"` // 1-based pass index when Comparison.Runs > 1
 	Report  Report   `json:"report"`
 	Samples []Sample `json:"samples"`
 }
 
 // ComparisonReport holds every agent's results plus the gate used to derive
 // PASS/FAIL, and can render a task x agent grid.
+//
+// Targets carries one entry per target per run, so a repeated comparison keeps
+// every pass rather than averaging them away: which task flipped between passes
+// is the interesting part, and a mean alone hides it. Run indexes the pass.
 type ComparisonReport struct {
 	Targets []TargetReport `json:"targets"`
 	Gate    []string       `json:"gate,omitempty"`
+	Runs    int            `json:"runs,omitempty"`
 }
 
 // Run executes the comparison and returns the full report.
 func (c Comparison) Run(ctx context.Context) ComparisonReport {
-	cr := ComparisonReport{Gate: c.Gate}
-	for _, nt := range c.Targets {
-		var onResult func(Task, Sample, error)
-		if c.OnResult != nil {
-			name := nt.Name
-			onResult = func(t Task, s Sample, err error) { c.OnResult(name, t, s, err) }
+	runs := c.Runs
+	if runs <= 0 {
+		runs = 1
+	}
+	cr := ComparisonReport{Gate: c.Gate, Runs: runs}
+	for run := 1; run <= runs; run++ {
+		for _, nt := range c.Targets {
+			var onResult func(Task, Sample, error)
+			if c.OnResult != nil {
+				name := nt.Name
+				onResult = func(t Task, s Sample, err error) { c.OnResult(name, t, s, err) }
+			}
+			bench := Bench{
+				Target:      nt.Target,
+				Tasks:       c.Tasks,
+				Metrics:     c.Metrics,
+				Concurrency: c.Concurrency,
+				Timeout:     c.Timeout,
+				OnResult:    onResult,
+			}
+			report, samples := bench.Run(ctx)
+			cr.Targets = append(cr.Targets, TargetReport{
+				Name: nt.Name, Run: run, Report: report, Samples: samples,
+			})
 		}
-		bench := Bench{
-			Target:      nt.Target,
-			Tasks:       c.Tasks,
-			Metrics:     c.Metrics,
-			Concurrency: c.Concurrency,
-			Timeout:     c.Timeout,
-			OnResult:    onResult,
-		}
-		report, samples := bench.Run(ctx)
-		cr.Targets = append(cr.Targets, TargetReport{Name: nt.Name, Report: report, Samples: samples})
 	}
 	return cr
+}
+
+// TargetStats summarises one target across the runs of a repeated comparison.
+//
+// The three rates are the standard family for a non-deterministic agent, and
+// they answer different questions:
+//
+//	Pass1  — mean success over all attempts. "How often does it work?"
+//	PassK  — task succeeded in AT LEAST ONE run. "Can it do this at all?"
+//	PassCaretK — task succeeded in EVERY run. "Can I rely on it?"
+//
+// The gap between PassK and PassCaretK is the flakiness: tasks it can do but
+// does not do consistently. An agent picked on Pass1 alone can be one whose
+// successes never repeat.
+type TargetStats struct {
+	Name       string    `json:"name"`
+	Runs       int       `json:"runs"`
+	Pass1      float64   `json:"pass_1"`
+	PassK      float64   `json:"pass_k"`
+	PassCaretK float64   `json:"pass_caret_k"`
+	Min        float64   `json:"min"`
+	Max        float64   `json:"max"`
+	Each       []float64 `json:"each"` // per-run pass rate, in run order
+}
+
+// Spread is how far the target moved between its best and worst run. Two agents
+// whose means differ by less than either one's spread have not been separated.
+func (t TargetStats) Spread() float64 { return t.Max - t.Min }
+
+// outcomes is per-target, per-task pass/fail across runs.
+func (cr ComparisonReport) outcomes() (map[string]map[string][]bool, []string) {
+	by := map[string]map[string][]bool{}
+	var order []string
+	for _, tr := range cr.Targets {
+		if _, seen := by[tr.Name]; !seen {
+			by[tr.Name] = map[string][]bool{}
+			order = append(order, tr.Name)
+		}
+		for _, sr := range tr.Report.Samples {
+			by[tr.Name][sr.Sample] = append(by[tr.Name][sr.Sample], samplePassed(sr, cr.Gate))
+		}
+	}
+	return by, order
+}
+
+// Stats aggregates each target across runs, best Pass1 first.
+func (cr ComparisonReport) Stats() []TargetStats {
+	by, order := cr.outcomes()
+	out := make([]TargetStats, 0, len(order))
+
+	for _, name := range order {
+		tasks := by[name]
+		if len(tasks) == 0 {
+			continue
+		}
+		s := TargetStats{Name: name}
+		runs := 0
+		var attempts, wins int
+		for _, res := range tasks {
+			runs = max(runs, len(res))
+			any, all := false, len(res) > 0
+			for _, ok := range res {
+				attempts++
+				if ok {
+					wins++
+					any = true
+				} else {
+					all = false
+				}
+			}
+			if any {
+				s.PassK++
+			}
+			if all {
+				s.PassCaretK++
+			}
+		}
+		n := float64(len(tasks))
+		s.Runs = runs
+		s.PassK /= n
+		s.PassCaretK /= n
+		if attempts > 0 {
+			s.Pass1 = float64(wins) / float64(attempts)
+		}
+
+		// Per-run rates, for the spread.
+		s.Each = make([]float64, runs)
+		for r := range runs {
+			passed, total := 0, 0
+			for _, res := range tasks {
+				if r < len(res) {
+					total++
+					if res[r] {
+						passed++
+					}
+				}
+			}
+			if total > 0 {
+				s.Each[r] = float64(passed) / float64(total)
+			}
+		}
+		s.Min, s.Max = s.Each[0], s.Each[0]
+		for _, v := range s.Each {
+			s.Min, s.Max = min(s.Min, v), max(s.Max, v)
+		}
+		out = append(out, s)
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Pass1 > out[j].Pass1 })
+	return out
+}
+
+// Discordance is a paired comparison of two targets on the tasks both attempted.
+// A raw score gap says nothing about whether it would survive another run;
+// pairing by task removes the "some tasks are just hard" variance that dominates
+// an unpaired comparison of two small suites.
+type Discordance struct {
+	A      string  `json:"a"`
+	B      string  `json:"b"`
+	AOnly  int     `json:"a_only"` // A passed every run, B did not
+	BOnly  int     `json:"b_only"`
+	PValue float64 `json:"p_value"` // exact two-sided sign test on the discordant pairs
+}
+
+// Compare runs an exact McNemar-style sign test between two targets, using each
+// task's consistent outcome (passed in every run) so a flaky success is not
+// counted as a win.
+func (cr ComparisonReport) Compare(a, b string) Discordance {
+	by, _ := cr.outcomes()
+	ta, tb := by[a], by[b]
+	d := Discordance{A: a, B: b, PValue: 1}
+	for task, ra := range ta {
+		rb, ok := tb[task]
+		if !ok || len(ra) == 0 || len(rb) == 0 {
+			continue
+		}
+		allA, allB := true, true
+		for _, v := range ra {
+			allA = allA && v
+		}
+		for _, v := range rb {
+			allB = allB && v
+		}
+		switch {
+		case allA && !allB:
+			d.AOnly++
+		case allB && !allA:
+			d.BOnly++
+		}
+	}
+	d.PValue = signTestP(d.AOnly, d.BOnly)
+	return d
+}
+
+// signTestP is the exact two-sided binomial test at p=0.5 on discordant pairs.
+func signTestP(x, y int) float64 {
+	n := x + y
+	if n == 0 {
+		return 1
+	}
+	k := min(x, y)
+	// 2 * P(X <= k), clamped — the standard two-sided exact form.
+	var tail float64
+	for i := 0; i <= k; i++ {
+		tail += choose(n, i)
+	}
+	p := 2 * tail / math.Pow(2, float64(n))
+	return min(p, 1)
+}
+
+func choose(n, k int) float64 {
+	if k < 0 || k > n {
+		return 0
+	}
+	r := 1.0
+	for i := range k {
+		r = r * float64(n-i) / float64(i+1)
+	}
+	return r
+}
+
+// WriteStats prints pass@1 / pass@k / pass^k with the run-to-run spread, then
+// says plainly whether the top two were actually separated. A leaderboard that
+// prints only a mean invites a ranking the data does not support: published
+// audits of repeated agent runs report spreads near 19 points on an unchanged
+// configuration, which is wider than most leaderboard margins.
+func (cr ComparisonReport) WriteStats(w io.Writer) {
+	stats := cr.Stats()
+	if len(stats) == 0 {
+		return
+	}
+	fmt.Fprintf(w, "\n--- %d run(s) ---\n", cr.Runs)
+	fmt.Fprintf(w, "%-20s %-9s %-9s %-9s %-9s %s\n",
+		"agent", "pass@1", "pass@k", "pass^k", "spread", "per run")
+	for _, s := range stats {
+		each := make([]string, len(s.Each))
+		for i, v := range s.Each {
+			each[i] = fmt.Sprintf("%.0f%%", v*100)
+		}
+		fmt.Fprintf(w, "%-20s %-9s %-9s %-9s %-9s %s\n",
+			s.Name,
+			fmt.Sprintf("%.0f%%", s.Pass1*100),
+			fmt.Sprintf("%.0f%%", s.PassK*100),
+			fmt.Sprintf("%.0f%%", s.PassCaretK*100),
+			fmt.Sprintf("±%.0f", s.Spread()*100/2),
+			strings.Join(each, " "))
+	}
+
+	if cr.Runs > 1 {
+		fmt.Fprintln(w, "\npass@k = solved at least once; pass^k = solved every run.")
+		fmt.Fprintln(w, "The gap between them is flakiness: tasks it can do but does not do reliably.")
+	}
+
+	if len(stats) > 1 {
+		top, second := stats[0], stats[1]
+		gap := (top.Pass1 - second.Pass1) * 100
+		noise := max(top.Spread(), second.Spread()) * 100
+		d := cr.Compare(top.Name, second.Name)
+		fmt.Fprintf(w, "\n%s vs %s: %+.0f points; discordant tasks %d/%d, sign test p=%.3f\n",
+			top.Name, second.Name, gap, d.AOnly, d.BOnly, d.PValue)
+		switch {
+		case cr.Runs < 2:
+			fmt.Fprintln(w, "One run cannot separate them — repeat with --runs to find out.")
+		case gap < noise:
+			fmt.Fprintf(w, "That gap is inside the %.0f-point run-to-run spread: not separated.\n", noise)
+		case d.PValue >= 0.05:
+			fmt.Fprintln(w, "Not significant at p<0.05: not separated.")
+		default:
+			fmt.Fprintf(w, "%s is ahead (p<0.05).\n", top.Name)
+		}
+	}
 }
 
 // gateMatches reports whether a Result metric name satisfies a gate name. It is
