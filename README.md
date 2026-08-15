@@ -33,6 +33,10 @@ LLMs (local Ollama or cloud) across 30 real-world scenarios on tool choice,
 conditional orchestration, distractor resistance, and knowing when *not* to call
 a tool.
 
+New here? **[docs/overview.md](docs/overview.md)** explains the two layers (scoring
+an output vs. driving an agent), which one answers which question, and where each
+approach stops being valid. This README is the reference.
+
 ## Install
 
 ```bash
