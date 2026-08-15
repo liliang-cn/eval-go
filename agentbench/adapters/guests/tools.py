@@ -33,6 +33,7 @@ import math
 import operator
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -571,6 +572,42 @@ TOOL_SPECS: list[ToolSpec] = [
         web_search,
     ),
 ]
+
+# ── AgentBench tool set ───────────────────────────────────────────────────────
+# The six tools above mirror superleo's own surface, which is right for comparing
+# guests against superleo but not for comparing them against everything else: a
+# task needing send_email is unreachable rather than failed, and the score then
+# measures the tool list.
+#
+# With AGENTBENCH_TOOL_BIN set, the specs are replaced by the ten the Go binary
+# publishes — the same set superai and superleo get over MCP. Shelling out per
+# call rather than reimplementing them here keeps agentbench/tools/ the only
+# definition; a second currency table in Python would drift, and the day the two
+# disagree the frameworks are no longer being compared on the same environment.
+def _agentbench_specs(binary: str) -> list[ToolSpec]:
+    listed = subprocess.run([binary, "list"], capture_output=True, text=True, check=True)
+
+    def caller(tool: str) -> Callable[..., str]:
+        def run(**kwargs: Any) -> str:
+            args = {k: v for k, v in kwargs.items() if v not in ("", None)}
+            proc = subprocess.run(
+                [binary, "call", tool, json.dumps(args, ensure_ascii=False)],
+                capture_output=True, text=True,
+            )
+            if proc.returncode != 0:
+                return json.dumps({"error": proc.stderr.strip() or "tool failed"}, ensure_ascii=False)
+            return proc.stdout.strip()
+        return run
+
+    return [
+        ToolSpec(t["name"], t["description"], t.get("params") or {}, caller(t["name"]))
+        for t in json.loads(listed.stdout)
+    ]
+
+
+if os.environ.get("AGENTBENCH_TOOL_BIN"):
+    TOOL_SPECS = _agentbench_specs(os.environ["AGENTBENCH_TOOL_BIN"])
+
 
 SYSTEM_PROMPT = (
     "You are a helpful life assistant. Use the available tools to actually complete the user's "
