@@ -24,11 +24,30 @@ superai 53%**,当时看起来是框架能力差距。统一工具集之后:
 | superai | 53% | 77% | **+24** |
 | superleo | 73% | 80% | +7 |
 
-superai 之前低那么多,主因是**它缺工具**——没有 `send_email` / `get_weather` 这些,
-凡是要真发邮件、真查天气的任务一律完不成。补齐能力面后直接跳到 77%,和 superleo 拉平。
+superai 之前低那么多,和它缺 `send_email` / `get_weather` 有关——但**"缺工具"只是一半,
+而且是宽容的那一半**。没有工具时正确的做法是明说"我做不到",翻当时的记录,它不是这么做的:
 
-**所以不能说 harness-rs 优于 agent-go。** 那个差距是工具可用性造成的,不是编排能力。
-这也正是 `cmd/benchmcp` 存在的理由:不统一工具面,比的就不是框架。
+| 题 | 当时的行为 | 输出 |
+|---|---|---|
+| `home-allowance` | 搜工具 ×3 → 搜 MCP → `task_blocked` | **空字符串** |
+| `finance-interest` | 搜工具 ×3 | **空字符串**(连终止信号都没有) |
+| `health-water` | 搜工具 ×2 → `task_blocked` | **空字符串** |
+| `finance-tax` | 算对了 $1,870 | 只报税额,**没提发不了邮件** |
+| `work-expense-convert` | 一通搜索和 JS | `"### Result 1"` |
+
+一次都没说过"我没有发邮件的工具"。用户端看到的是空白。所以那 53% 里混着两件事:
+
+1. **真的缺能力**——客观限制,补上工具就好了;
+2. **缺能力时收尾得很糟**——搜工具死循环、`task_blocked` 不带话、返回空串。**这一类正是
+   编排能力的问题**,不能拿"缺工具"解释掉。
+
+第 2 类有旁证:agent-go 后来的 `2f5f420` 专门修了它——"a blocked run could also reach the
+user as an empty string … every blocked path now goes through one fallback, so a refusal
+reads as a refusal instead of a crash"。框架作者自己也认定这是 bug。
+
+**结论**:统一工具面后两者打平,所以**不能说 harness-rs 优于 agent-go**;但也不能反过来说
+superai 当初的低分纯属工具问题——其中相当一部分是真缺陷,后来被修掉了。这正是
+`cmd/benchmcp` 存在的理由:不统一工具面,你分不清"框架不行"和"手里没家伙"。
 
 ### 逐类型:几乎完全一致
 
