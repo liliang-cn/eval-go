@@ -46,3 +46,6 @@ agentbench/targets.superleo.json
 agentbench/targets.dsh.json
 agentbench/.superleo-home/
 agentbench/targets.all5.json
+agentbench/targets.langgraph-mcp.json
+agentbench/targets.langgraph-run.json
+agentbench/targets.superai-only.json

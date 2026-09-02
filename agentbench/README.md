@@ -134,6 +134,11 @@ the in-house agents, so the numbers compare *agent loops* rather than tool surfa
 - `langgraph_agent.py` / `crewai_agent.py` / `smolagents_agent.py` — default
   framework shapes (prebuilt ReAct graph, single Agent+Task crew, `ToolCallingAgent`),
   one plain shared system prompt, no defensive prompt engineering.
+- `langgraph_mcp_agent.py` — the same LangGraph shape on the **benchmcp** tool set
+  over stdio (`langchain-mcp-adapters`), so LangGraph can be scored on exactly the ten
+  tools superai and superleo mount. Set `BENCHMCP=./bin/benchmcp` in the target env.
+  Use this one when the question is "which loop is better"; the six-tool guests
+  answer "how does a framework cope with a thinner tool set".
 
 ```bash
 python3.12 -m venv adapters/guests/.venv

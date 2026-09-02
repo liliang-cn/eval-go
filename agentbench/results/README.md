@@ -1,5 +1,34 @@
 # AgentBench 跑测记录
 
+## 2026-09-02 · agent-go v3.14.0 vs LangGraph,工具面对齐
+
+**报告**:`report-20260902-{core30,hard15}.json`(superai)、`report-20260902-lgmcp-*.json`
+(LangGraph 挂 benchmcp)、`report-20260902-lg-*.json`(LangGraph 客座 6 工具)。
+同模型 `gemini-3.7-flash-high`,同裁判 `claude-sonnet-4-6`,gate=`task_completion`,每题 1 轮,并发 3。
+
+| | core-30 | hard-15 | 工具/题(core-30) |
+|---|---|---|---|
+| **superai**(agent-go v3.14.0,benchmcp 10 工具) | **24/30** | **9/15** | 3.3 |
+| **LangGraph**(benchmcp 同一套 10 工具) | 22/30 | 9/15 | 1.37 |
+| LangGraph(客座 6 工具,无天气/股价/汇率) | 14/30 | 7/15 | 1.73 |
+
+三条结论:
+
+1. **工具面不对齐时的 10 题差距是假的。** 客座 6 工具的 LangGraph 挂掉的 16 题里有 5 道是天气/股价/
+   汇率题——它根本没有那些工具。把它也挂上 `cmd/benchmcp`(新适配器 `adapters/guests/langgraph_mcp_agent.py`,
+   经 `langchain-mcp-adapters` 走 stdio)之后,core-30 差距缩到 **2 题**,hard-15 **打平**。
+   这再次证明了 benchmcp 存在的理由:不统一工具面,你分不清"框架不行"和"手里没家伙"。
+2. **agent-go 相对 08-15 基线持平**:core-30 25→24,hard-15 8→9。hard-15 逐题 3 升 2 降,单轮波动内。
+   稳定挂的还是 restraint(5/8 core-30 挂、hard-15 三道全挂)和 fabrication——所有被测对象的共同短板。
+3. **赢完成率、输克制**没变:superai 每题 3.3 次工具,LangGraph 1.37。core-30 上 superai 多赢的
+   3 道(`work-translate-notice`、`personal-language`、`travel-flight-checkin`)都是多步链;LangGraph 多赢
+   的 1 道是 `travel-phrase`。hard-15 上两边各赢一道(`boundary-strict` 归 LangGraph,`chain-error-midway`
+   归 superai)。
+
+方法注记:LangGraph-mcp 的工具调用从最终 message state 里的 `AIMessage.tool_calls` 回收,不包装工具;
+三份报告空输出均为 0(网关没塌)。superleo 这次没跑。
+
+
 ## 2026-08-15 · superai vs superleo,工具集统一
 
 **报告**:`report-mcp-superai-vs-superleo.json`

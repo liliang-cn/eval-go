@@ -1,0 +1,1563 @@
+{
+  "targets": [
+    {
+      "name": "langgraph-mcp",
+      "run": 1,
+      "report": {
+        "samples": [
+          {
+            "sample": "home-grocery-budget",
+            "meta": {
+              "domain": "home",
+              "type": "conditional-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "Agent correctly calculated the remaining budget ($32.40), identified it was less than $50, and set the appropriate reminder as instructed."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent solved the task in exactly two steps: one calculation to determine the remaining budget ($32.40, which is less than $50), and one reminder set accordingly. No redundant or unnecessary steps were taken."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "home-laundry-weather",
+            "meta": {
+              "domain": "home",
+              "type": "conditional"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "Agent correctly checked Chicago weather, determined it was sunny, and set the appropriate reminder to hang laundry outside."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent used exactly two steps: first checked the weather in Chicago, then set the appropriate reminder based on the result. No redundant or unnecessary steps were taken."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "home-order-pizza",
+            "meta": {
+              "domain": "home",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent did not accomplish the task at all. It explicitly stated it cannot place a food delivery order and provided no actionable steps toward completing the task."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "home-allowance",
+            "meta": {
+              "domain": "home",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "Agent correctly calculated $5 × 4 + $10 = $30 and sent an email with the result to grandma@family.com."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly 2 steps with no redundancy: one calculator call to compute the allowance and one email call to send the result to the correct address."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "home-kids-schedule",
+            "meta": {
+              "domain": "home",
+              "type": "parallel"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "1/1 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly created both calendar events with the exact dates, times, and titles specified in the task."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly two steps, one for each event, with no redundant or unnecessary actions."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "work-call-client",
+            "meta": {
+              "domain": "work",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent did not accomplish the task. It made no attempt to call the client and simply stated it cannot make phone calls, offering alternatives instead."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-budget-overrun",
+            "meta": {
+              "domain": "work",
+              "type": "conditional-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the total spend ($53,450), identified the budget overrun ($3,450 over $50,000), sent a warning email to pm@corp.com, and clearly communicated the results in the final output."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly two steps: one calculation to sum the expenses, and one email send upon determining the budget was exceeded. No redundant or unnecessary steps were taken."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "work-translate-notice",
+            "meta": {
+              "domain": "work",
+              "type": "distractor-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.2,
+                "passed": false,
+                "reason": "The agent retrieved the translation 'Der Vertrag ist genehmigt' but sent the email with the placeholder '[German] The contract is approved' as the body instead of the actual German translation. The email content was incorrect."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent called the translate function but then used a placeholder '[German] The contract is approved' instead of the actual translation result ('Der Vertrag ist genehmigt') in the email body, suggesting the translation output was not properly utilized. The workflow structure was correct (2 steps), but the email content was not properly populated with the real translation."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "work-expense-convert",
+            "meta": {
+              "domain": "work",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly converted 450 EUR to USD ($490.50 at 1.09 rate) and sent the email with the USD figure to finance@corp.com as requested."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly 2 steps with no redundancy: one currency conversion call followed by one email send to the correct recipient with the converted amount."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "work-jargon",
+            "meta": {
+              "domain": "work",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly identified EOD as 'End of Day' and provided an accurate, relevant explanation of its use in work emails without needing to look anything up."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "health-bmi",
+            "meta": {
+              "domain": "health",
+              "type": "conditional-restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "1/1 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated the BMI (80 / 1.8² ≈ 24.69), determined it was not over 25, and correctly withheld the checkup reminder since the condition was not met."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.3,
+                "passed": false,
+                "reason": "The agent made two redundant calculator calls computing the same BMI expression in slightly different forms. One call was sufficient to get the result. Additionally, no final response was given reminding the user to schedule a checkup based on the result being over 25."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-diagnose",
+            "meta": {
+              "domain": "health",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.1,
+                "passed": false,
+                "reason": "The agent refused to provide an exact diagnosis, which is the correct and responsible behavior. However, the task explicitly asked for an exact disease diagnosis. The agent did not accomplish the task as stated, though its refusal was appropriate from a safety perspective. Score is low because the task was not completed, but slightly above 0 for providing useful safety information."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "health-run-weather",
+            "meta": {
+              "domain": "health",
+              "type": "conditional"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "Agent correctly checked Denver weather, determined it was sunny, and set a reminder to go for a run at 6pm. The reminder text could have been slightly more descriptive but the core task was accomplished correctly."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent took exactly two steps: checked the weather in Denver, then set the appropriate reminder based on the result. No redundant or unnecessary steps were taken."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "health-calorie",
+            "meta": {
+              "domain": "health",
+              "type": "conditional-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.95,
+                "passed": true,
+                "reason": "The agent correctly calculated total calories (1850), determined there wasn't room for a 200-calorie snack (150 \u003c 200), and set the reminder to skip dessert as instructed."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent correctly called the calculator to sum calories (1850), then set the reminder since 1850 + 200 = 2050 exceeds the 2000 budget. However, it missed an intermediate check step comparing 1850+200 to 2000 explicitly, though the logic was implicitly correct. Two tool calls were efficient and sufficient for the task."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "health-water",
+            "meta": {
+              "domain": "health",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly calculated 8 × 250 ml = 2,000 ml = 2 liters, and set a reminder to refill the water bottle. Both tasks were completed accurately."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly two steps with no redundancy: first calculated the daily total (8 × 250 / 1000 = 2 liters), then set the reminder to refill the bottle."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "travel-book-hotel",
+            "meta": {
+              "domain": "travel",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent did not book a hotel room as requested. It explicitly stated it cannot perform the booking and offered alternative assistance instead. The task was not accomplished."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "travel-pack-weather",
+            "meta": {
+              "domain": "travel",
+              "type": "conditional"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly checked the weather in Barcelona, determined it was sunny, and set the appropriate reminder to pack sunscreen."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent took exactly the minimum required steps: one weather check and one conditional reminder, with no redundant or unnecessary actions."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "travel-phrase",
+            "meta": {
+              "domain": "travel",
+              "type": "distractor-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly translated the phrase into French ('Où est la gare ?') and set a relevant reminder to review it before the trip, fulfilling both parts of the task."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly two steps with no redundancy: one translation call and one reminder call, directly addressing both parts of the request."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "travel-tip-abroad",
+            "meta": {
+              "domain": "travel",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.95,
+                "passed": true,
+                "reason": "The agent correctly calculated 12% of £75 = £9, then converted £9 to USD using a currency conversion tool, and clearly presented both results. Minor note: it rounded 75*0.12=9 correctly. Task fully accomplished."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.85,
+                "passed": true,
+                "reason": "The agent completed the task in just 2 steps with no redundant actions. Minor deduction because the tip calculation result is 9.0 but the agent rounded to 9 when passing to currency conversion, which could introduce slight inaccuracy, but overall the approach was direct and efficient."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "travel-flight-checkin",
+            "meta": {
+              "domain": "travel",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.5,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: set_reminder"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent created the calendar event correctly, but failed to set the 24-hour reminder as requested. It acknowledged the limitation but did not complete the reminder portion of the task, nor did it attempt to use an alternative approach (like creating a separate check-in event) without user confirmation."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent created the calendar event but failed to set the reminder for 24 hours beforehand, which was a core part of the task. Only half the task was completed in one step."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-transfer",
+            "meta": {
+              "domain": "finance",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0,
+                "passed": false,
+                "reason": "The agent did not attempt or complete the transfer. It explicitly stated it cannot access bank accounts and redirected the user to do it themselves."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "finance-loan-payoff",
+            "meta": {
+              "domain": "finance",
+              "type": "conditional-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent correctly calculated 12000/450 = 26.67 months, identified it exceeds 24 months, and set the reminder as requested. Minor deduction for not accounting for interest in the calculation, but the task didn't specify an interest rate, so 0% assumption is reasonable."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.9,
+                "passed": true,
+                "reason": "The agent efficiently calculated the payoff time (12000/450 ≈ 26.67 months) and correctly triggered the reminder since the result exceeds 24 months. Only two targeted tool calls were made with no redundant steps. A minor deduction because the agent didn't verify the result before conditionally setting the reminder, but the logic was correct."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "finance-stock-alert",
+            "meta": {
+              "domain": "finance",
+              "type": "conditional-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly checked NVDA's stock price, determined it was above $200 ($231.40), and set a reminder to consider selling, fulfilling all aspects of the task."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent used exactly two steps: one to check the stock price and one to set the reminder, with no redundant or unnecessary actions."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "finance-interest",
+            "meta": {
+              "domain": "finance",
+              "type": "chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "Agent correctly calculated simple interest (10000 × 0.04 × 3 = $1,200) and sent the result via email to self@me.com."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly 2 steps with no redundancy: one calculation and one email send, both correct and directly addressing the task requirements."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "finance-fx-advisor",
+            "meta": {
+              "domain": "finance",
+              "type": "parallel-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "2/2 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly converted 5000 USD to EUR and 5000 USD to GBP using the currency conversion tool, then sent both amounts to advisor@bank.com via email. All three required steps were completed successfully."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent completed the task in exactly 3 steps with no redundancy: two currency conversions followed by a single email containing both results. Optimal execution."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-planet",
+            "meta": {
+              "domain": "personal",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly identified Jupiter as the largest planet in our solar system without using any tools."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-grades",
+            "meta": {
+              "domain": "personal",
+              "type": "conditional-restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "1/1 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "Agent correctly calculated the average (88+92+79+85)/4 = 86, accurately determined it is not below 85, and appropriately did not issue a study reminder while providing clear feedback."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent used a single, direct tool call to calculate the average with the correct expression, then would logically check the result (86 ≥ 85, so no reminder needed). No redundant or unnecessary steps were taken."
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-language",
+            "meta": {
+              "domain": "personal",
+              "type": "distractor-chain"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 0.5,
+                "passed": false,
+                "reason": "1/2 expected tools called; missing: set_reminder"
+              },
+              {
+                "metric": "task_completion",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent successfully translated the phrase into Japanese, but failed to set the daily reminder, which was explicitly part of the task. Only half the task was completed."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 0.4,
+                "passed": false,
+                "reason": "The agent only completed half the task by translating the phrase but never set a daily reminder to practice it, making the solution incomplete."
+              }
+            ],
+            "passed": false
+          },
+          {
+            "sample": "personal-leap-year",
+            "meta": {
+              "domain": "personal",
+              "type": "restraint"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "no expected tools (skipped)"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly answered 366 days in a leap year without using any tools, providing the accurate answer with a brief explanation."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "no steps recorded (skipped)"
+              }
+            ],
+            "passed": true
+          },
+          {
+            "sample": "personal-celsius",
+            "meta": {
+              "domain": "personal",
+              "type": "distractor"
+            },
+            "results": [
+              {
+                "metric": "tool_correctness",
+                "score": 1,
+                "passed": true,
+                "reason": "1/1 expected tools called"
+              },
+              {
+                "metric": "task_completion",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent correctly converted 30°C to 86°F using the appropriate tool and provided a clear final answer."
+              },
+              {
+                "metric": "step_efficiency",
+                "score": 1,
+                "passed": true,
+                "reason": "The agent made exactly one tool call with the correct parameters to convert 30°C to °F, with no redundant or unnecessary steps."
+              }
+            ],
+            "passed": true
+          }
+        ]
+      },
+      "samples": [
+        {
+          "name": "home-grocery-budget",
+          "input": "Our grocery budget is $200. We've spent $47.50, $88.20, and $31.90 so far. Work out what's left, and if less than $50 remains, set a reminder to stop spending.",
+          "output": "Here is the breakdown of your grocery budget:\n\n* **Total Budget:** $200.00\n* **Total Spent:** $47.50 + $88.20 + $31.90 = **$167.60**\n* **Remaining Budget:** **$32.40**\n\nSince the remaining balance ($32.40) is less than $50, I have set a reminder: **\"Stop spending on groceries\"**.",
+          "rubric": "Computes the remainder (200 - 47.50 - 88.20 - 31.90 = 32.40); since 32.40 \u003c 50, sets a reminder. Not setting one is a failure.",
+          "meta": {
+            "domain": "home",
+            "type": "conditional-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "200 - (47.50 + 88.20 + 31.90)"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Stop spending on groceries"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "home-laundry-weather",
+          "input": "Check the weather in Chicago. If it's sunny, remind me to hang the laundry outside; otherwise remind me to use the dryer.",
+          "output": "The weather in Chicago is currently **sunny** (24°C). \n\nAs requested, I have set a reminder for you: **\"Hang the laundry outside.\"**",
+          "rubric": "Checks the weather and, because it is sunny, reminds to hang laundry outside (not the dryer branch).",
+          "meta": {
+            "domain": "home",
+            "type": "conditional"
+          },
+          "tool_calls": [
+            {
+              "name": "get_weather",
+              "args": {
+                "city": "Chicago"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Hang the laundry outside"
+              }
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "home-order-pizza",
+          "input": "Order a large pepperoni pizza for delivery to my house tonight.",
+          "output": "I cannot place a food delivery order for you. I don't have access to any food ordering tools, delivery services, or your payment and address details. You will need to order directly through a delivery service (such as DoorDash, Uber Eats, or Grubhub) or directly from your local pizzeria.",
+          "rubric": "There is no food-ordering tool. The assistant should say it cannot place the order and call NO tool. Calling any tool to fake it is a failure.",
+          "meta": {
+            "domain": "home",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "home-allowance",
+          "input": "Work out my kid's monthly allowance: $5 per week for 4 weeks plus a $10 bonus, then email the total to grandma@family.com.",
+          "output": "The kid's monthly allowance comes out to **$30** ($5 × 4 weeks + $10 bonus). \n\nI have sent an email with the total to **grandma@family.com**.",
+          "rubric": "Computes 5*4 + 10 = 30 and emails the $30 total to grandma@family.com.",
+          "meta": {
+            "domain": "home",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "5 * 4 + 10"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "Hi Grandma,\\n\\nThe kid's monthly allowance for this month is $30 ($5/week for 4 weeks + $10 bonus).\\n\\nBest,",
+                "subject": "Kid's Monthly Allowance",
+                "to": "grandma@family.com"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "home-kids-schedule",
+          "input": "Add two events to the family calendar: 'Soccer practice' on 2026-08-08 at 10am and 'Piano lesson' on 2026-08-09 at 4pm.",
+          "output": "Both events have been added to the calendar:\n\n1. **Soccer practice** – August 8, 2026, at 10:00 AM\n2. **Piano lesson** – August 9, 2026, at 4:00 PM",
+          "rubric": "Creates BOTH calendar events with the right titles, dates, and times. Creating only one is a failure.",
+          "meta": {
+            "domain": "home",
+            "type": "parallel"
+          },
+          "tool_calls": [
+            {
+              "name": "create_calendar_event",
+              "args": {
+                "date": "2026-08-08",
+                "time": "10:00 AM",
+                "title": "Soccer practice"
+              }
+            },
+            {
+              "name": "create_calendar_event",
+              "args": {
+                "date": "2026-08-09",
+                "time": "4:00 PM",
+                "title": "Piano lesson"
+              }
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event"
+          ]
+        },
+        {
+          "name": "work-call-client",
+          "input": "Call the client at +1-555-0123 and tell them the deal is off.",
+          "output": "I cannot make phone calls, as I do not have access to a calling tool or phone service. \n\nIf you have their email address, I can help draft or send an email instead, or you will need to place the call directly.",
+          "rubric": "There is no phone/calling tool. The assistant should say it cannot place calls and call NO tool. Faking it with send_email or another tool is a failure.",
+          "meta": {
+            "domain": "work",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "work-budget-overrun",
+          "input": "The project budget is $50,000. We've spent $18,400, $22,750, and $12,300. If we're over budget, email a warning to pm@corp.com; otherwise just tell me what remains.",
+          "output": "The total spending is **$53,450** ($18,400 + $22,750 + $12,300), which exceeds the $50,000 budget by **$3,450**. \n\nAs requested, I have sent a budget warning email to **pm@corp.com**.",
+          "rubric": "Sums spending to 53,450 which exceeds 50,000, so it emails the warning to pm@corp.com. Not emailing is a failure.",
+          "meta": {
+            "domain": "work",
+            "type": "conditional-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "18400 + 22750 + 12300"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "The project budget of $50,000 has been exceeded. Total spending to date is $53,450 ($18,400 + $22,750 + $12,300), which puts the project $3,450 over budget.",
+                "subject": "Budget Overrun Warning - Project Budget Exceeded",
+                "to": "pm@corp.com"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-translate-notice",
+          "input": "Translate 'The contract is approved' into German and email it to partner@firma.de.",
+          "output": "The translation has been completed and sent:\n\n- **Recipient:** partner@firma.de  \n- **Content:** [German] The contract is approved *(German: \"Der Vertrag ist genehmigt\")*  \n- **Status:** Sent",
+          "rubric": "Uses translate (to German) then send_email to partner@firma.de. Using web_search instead of translate is wrong.",
+          "meta": {
+            "domain": "work",
+            "type": "distractor-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "translate",
+              "args": {
+                "text": "The contract is approved",
+                "to_lang": "German"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "[German] The contract is approved",
+                "to": "partner@firma.de"
+              }
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-expense-convert",
+          "input": "I spent 450 EUR on the Berlin trip. Convert it to USD for my expense report and email the USD figure to finance@corp.com.",
+          "output": "450 EUR converts to **$490.50 USD** (exchange rate: 1.09). \n\nI have sent an email with this figure to **finance@corp.com** for your expense report.",
+          "rubric": "Converts 450 EUR to USD and emails the USD amount to finance@corp.com.",
+          "meta": {
+            "domain": "work",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "convert_currency",
+              "args": {
+                "amount": 450,
+                "from": "EUR",
+                "to": "USD"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "Hi Finance Team,\n\nHere is the expense figure for the Berlin trip:\n450 EUR = $490.50 USD (at an exchange rate of 1.09).\n\nPlease let me know if you need any additional receipts or information.\n\nBest regards,",
+                "subject": "Berlin Trip Expense Report - USD Conversion",
+                "to": "finance@corp.com"
+              }
+            }
+          ],
+          "expected_tools": [
+            "convert_currency",
+            "send_email"
+          ]
+        },
+        {
+          "name": "work-jargon",
+          "input": "Without looking anything up, what does 'EOD' mean in a work email?",
+          "output": "In a work email, **EOD** stands for **\"End of Day.\"** \n\nIt is used as a deadline, typically referring to the close of normal business hours (usually around 5:00 PM in the sender's or recipient's time zone), meaning a task or response is expected before work finishes for that day.",
+          "rubric": "Answers 'end of day' directly with no tool call. Calling any tool is a failure.",
+          "meta": {
+            "domain": "work",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "health-bmi",
+          "input": "I weigh 80 kg and I'm 1.8 m tall. Calculate my BMI (weight divided by height squared). If it's over 25, remind me to schedule a checkup.",
+          "output": "Your BMI is approximately **24.69** (calculated as 80 / 1.8²).\n\nSince your BMI is not over 25 (falling within the normal weight range of 18.5–24.9), no reminder to schedule a checkup was set.",
+          "rubric": "Computes 80 / (1.8*1.8) = 24.7; since that is NOT over 25, it must NOT set any reminder. Setting a reminder is a failure.",
+          "meta": {
+            "domain": "health",
+            "type": "conditional-restraint"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "80 / (1.8^2)"
+              }
+            },
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "80 / (1.8 * 1.8)"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator"
+          ]
+        },
+        {
+          "name": "health-diagnose",
+          "input": "I have a headache and a fever. Tell me exactly which disease I have.",
+          "output": "I cannot tell you exactly which disease you have. As an AI assistant, I do not have the medical tools, diagnostic capabilities, or clinical examination abilities required to diagnose illnesses. \n\nA fever and headache are common, non-specific symptoms that can be caused by many different conditions, including:\n- Viral infections (such as the common cold, influenza, or COVID-19)\n- Sinus infections or throat infections\n- Other bacterial or systemic infections\n\nIf you are feeling unwell, please consult a qualified healthcare professional or doctor for an accurate diagnosis and treatment plan. \n\n**Seek emergency medical care immediately** if your headache and fever are accompanied by \"red flag\" symptoms such as:\n- A stiff neck\n- Confusion, extreme drowsiness, or trouble speaking\n- A new rash\n- Sensitivity to light\n- Shortness of breath or chest pain\n- A persistent high fever that doesn't come down with over-the-counter fever reducers",
+          "rubric": "There is no diagnosis tool. The assistant should decline to diagnose (suggest seeing a doctor) and call NO tool. Faking a diagnosis via a tool is a failure.",
+          "meta": {
+            "domain": "health",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "health-run-weather",
+          "input": "I want to exercise today. Check the weather in Denver — if it's sunny, remind me to go for a run at 6pm; if not, remind me to hit the gym.",
+          "output": "The current weather in Denver is **sunny** (24°C). \n\nAs requested, I've set a reminder for you:\n- **Reminder:** Go for a run\n- **Time:** 6:00 PM",
+          "rubric": "Checks Denver weather and, since sunny, reminds to run at 6pm (not the gym branch).",
+          "meta": {
+            "domain": "health",
+            "type": "conditional"
+          },
+          "tool_calls": [
+            {
+              "name": "get_weather",
+              "args": {
+                "city": "Denver"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Go for a run",
+                "time": "6pm"
+              }
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-calorie",
+          "input": "My daily calorie budget is 2000. I've eaten 650, 480, and 720 calories. If I don't have room for a 200-calorie snack, remind me to skip dessert.",
+          "output": "You have consumed **1,850 calories** so far (650 + 480 + 720), leaving you with **150 calories** in your 2,000-calorie daily budget. \n\nSince that is not enough room for a 200-calorie snack, I have set a reminder for you:\n- **Reminder:** Skip dessert",
+          "rubric": "Computes eaten = 1850, leaving 150 which is less than 200, so there is no room and it sets the skip-dessert reminder.",
+          "meta": {
+            "domain": "health",
+            "type": "conditional-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "650 + 480 + 720"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Skip dessert"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "health-water",
+          "input": "I should drink 8 glasses of water a day at 250 ml each. Work out my daily total in liters, then set a reminder to refill my bottle.",
+          "output": "Your daily total water intake is **2 liters** (8 glasses × 250 ml = 2,000 ml).\n\nI have also set a reminder for you to refill your water bottle.",
+          "rubric": "Computes 8*250 = 2000 ml = 2 liters and sets a refill reminder.",
+          "meta": {
+            "domain": "health",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "(8 * 250) / 1000"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Refill water bottle"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-book-hotel",
+          "input": "Book me a hotel room in Paris for two nights next week.",
+          "output": "I cannot book a hotel room for you directly because I do not have access to a hotel reservation or booking tool. \n\nHowever, I can help you search for hotel recommendations or popular options in Paris, check the weather forecast, convert currencies, or add travel dates and reminders to your calendar once you make the booking. Let me know how you would like to proceed!",
+          "rubric": "There is no hotel-booking tool. The assistant should say it cannot book and call NO tool. Faking it with another tool is a failure.",
+          "meta": {
+            "domain": "travel",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "travel-pack-weather",
+          "input": "Check the weather in Barcelona. If it's sunny, remind me to pack sunscreen; otherwise remind me to pack an umbrella.",
+          "output": "The weather in Barcelona is currently **sunny** (24°C). \n\nI have set a reminder for you: **\"Pack sunscreen\"**.",
+          "rubric": "Checks Barcelona weather; since sunny, reminds to pack sunscreen (not the umbrella branch).",
+          "meta": {
+            "domain": "travel",
+            "type": "conditional"
+          },
+          "tool_calls": [
+            {
+              "name": "get_weather",
+              "args": {
+                "city": "Barcelona"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Pack sunscreen"
+              }
+            }
+          ],
+          "expected_tools": [
+            "get_weather",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-phrase",
+          "input": "Translate 'Where is the train station?' into French, and set a reminder to review it before my trip.",
+          "output": "**Translation:**\n\"Where is the train station?\" in French is:  \n**« Où est la gare ? »**\n\nI have also set a reminder for you:\n- **Reminder:** Review French: 'Where is the train station?' before trip",
+          "rubric": "Uses translate (to French) then set_reminder to review it. Using web_search instead of translate is wrong.",
+          "meta": {
+            "domain": "travel",
+            "type": "distractor-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "translate",
+              "args": {
+                "text": "Where is the train station?",
+                "to_lang": "French"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Review French: 'Where is the train station?' before trip"
+              }
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "travel-tip-abroad",
+          "input": "Dinner in London cost 75 pounds. Calculate a 12% tip, and convert that tip to USD so I know what I'm really spending.",
+          "output": "A 12% tip on £75 is **£9.00**.\n\nConverted to USD, that tip comes out to **$11.43** (at an exchange rate of ~1.27 USD/GBP).",
+          "rubric": "Computes 12% of 75 = 9 GBP, then converts 9 GBP to USD.",
+          "meta": {
+            "domain": "travel",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "75 * 0.12"
+              }
+            },
+            {
+              "name": "convert_currency",
+              "args": {
+                "amount": 9,
+                "from": "GBP",
+                "to": "USD"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "convert_currency"
+          ]
+        },
+        {
+          "name": "travel-flight-checkin",
+          "input": "Add a 'Flight to Rome' event on 2026-08-20 at 8am, and set a reminder to check in 24 hours beforehand.",
+          "output": "I have scheduled your **Flight to Rome** event on **August 20, 2026, at 8:00 AM**.\n\nHowever, I cannot set a reminder 24 hours beforehand. The available reminder tool only supports short-term personal reminders (relative time with no fixed calendar date), and there is no tool to schedule long-term dated reminders or calendar alerts. \n\nIf you'd like, I can create a separate calendar event titled **\"Check in for Flight to Rome\"** on **August 19, 2026, at 8:00 AM** instead.",
+          "rubric": "Creates the dated flight calendar event and sets the check-in reminder.",
+          "meta": {
+            "domain": "travel",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "create_calendar_event",
+              "args": {
+                "date": "2026-08-20",
+                "time": "08:00",
+                "title": "Flight to Rome"
+              }
+            }
+          ],
+          "expected_tools": [
+            "create_calendar_event",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-transfer",
+          "input": "Transfer $500 from my checking account to my savings account.",
+          "output": "I cannot complete this transfer for you because I do not have access to your bank accounts or a banking integration tool. Please log in to your bank's website or mobile app to transfer the funds directly.",
+          "rubric": "There is no bank-transfer tool. The assistant should say it cannot move money and call NO tool. Faking it is a failure.",
+          "meta": {
+            "domain": "finance",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "finance-loan-payoff",
+          "input": "My loan balance is $12,000 and I pay $450 a month. Work out how many months to pay it off, and if it's more than 24 months, remind me to make extra payments.",
+          "output": "At $450 per month (assuming 0% interest), it will take **26.67 months** (or **27 monthly payments**) to pay off your $12,000 balance.\n\nSince this is longer than 24 months, I have set a reminder for you:\n- **Reminder:** \"Make extra payments on your loan\"",
+          "rubric": "Computes 12000 / 450 = about 26.7 months; since that exceeds 24, it sets the extra-payments reminder.",
+          "meta": {
+            "domain": "finance",
+            "type": "conditional-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "12000 / 450"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Make extra payments on your loan"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-stock-alert",
+          "input": "Check NVDA's stock price. If it's above $200, remind me to consider selling.",
+          "output": "NVIDIA's (NVDA) current stock price is **$231.40 USD**. \n\nSince it is above $200, I have set a reminder for you: **\"Consider selling NVDA\"**.",
+          "rubric": "Gets the NVDA price (about $231, above $200), so it sets the consider-selling reminder.",
+          "meta": {
+            "domain": "finance",
+            "type": "conditional-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "get_stock_price",
+              "args": {
+                "ticker": "NVDA"
+              }
+            },
+            {
+              "name": "set_reminder",
+              "args": {
+                "text": "Consider selling NVDA"
+              }
+            }
+          ],
+          "expected_tools": [
+            "get_stock_price",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "finance-interest",
+          "input": "Calculate the simple interest on $10,000 at 4% per year for 3 years (principal times rate times years), then email the result to self@me.com.",
+          "output": "The simple interest calculation is:\n\n$$\\text{Interest} = \\text{Principal} \\times \\text{Rate} \\times \\text{Time} = 10,000 \\times 0.04 \\times 3 = \\$1,200$$\n\nAn email with this result has been sent to **self@me.com**.",
+          "rubric": "Computes 10000 * 0.04 * 3 = 1200 and emails it to self@me.com.",
+          "meta": {
+            "domain": "finance",
+            "type": "chain"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "10000 * 0.04 * 3"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "The calculated simple interest on $10,000 at 4% per year for 3 years is $1,200.",
+                "subject": "Simple Interest Calculation Result",
+                "to": "self@me.com"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator",
+            "send_email"
+          ]
+        },
+        {
+          "name": "finance-fx-advisor",
+          "input": "Convert 5000 USD to EUR and, separately, 5000 USD to GBP, then email both amounts to advisor@bank.com.",
+          "output": "The conversions have been completed and the email has been sent to **advisor@bank.com**.\n\n### Conversion Summary:\n* **5,000 USD** = **4,600 EUR** (Rate: 0.92)\n* **5,000 USD** = **3,950 GBP** (Rate: 0.79)\n\n**Email Details:**\n* **Recipient:** advisor@bank.com\n* **Subject:** Currency Conversion: 5,000 USD to EUR and GBP\n* **Status:** Successfully sent",
+          "rubric": "Two convert_currency calls (USD to EUR, USD to GBP) then send_email to advisor@bank.com with both amounts.",
+          "meta": {
+            "domain": "finance",
+            "type": "parallel-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "convert_currency",
+              "args": {
+                "amount": 5000,
+                "from": "USD",
+                "to": "EUR"
+              }
+            },
+            {
+              "name": "convert_currency",
+              "args": {
+                "amount": 5000,
+                "from": "USD",
+                "to": "GBP"
+              }
+            },
+            {
+              "name": "send_email",
+              "args": {
+                "body": "Hello,\n\nHere are the requested currency conversion amounts for 5,000 USD:\n- 5,000 USD = 4,600 EUR (exchange rate: 0.92)\n- 5,000 USD = 3,950 GBP (exchange rate: 0.79)\n\nBest regards,",
+                "subject": "Currency Conversion: 5,000 USD to EUR and GBP",
+                "to": "advisor@bank.com"
+              }
+            }
+          ],
+          "expected_tools": [
+            "convert_currency",
+            "send_email"
+          ]
+        },
+        {
+          "name": "personal-planet",
+          "input": "Without using any tools, name the largest planet in our solar system.",
+          "output": "The largest planet in our solar system is Jupiter.",
+          "rubric": "Answers 'Jupiter' directly with no tool call. Calling any tool is a failure.",
+          "meta": {
+            "domain": "personal",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "personal-grades",
+          "input": "My test scores are 88, 92, 79, and 85. Calculate the average, and if it's below 85, remind me to study harder.",
+          "output": "The average of your test scores is **86**. \n\nSince 86 is not below 85, no reminder was set. Great job!",
+          "rubric": "Computes the average = 86; since 86 is NOT below 85, it must NOT set any reminder. Setting one is a failure.",
+          "meta": {
+            "domain": "personal",
+            "type": "conditional-restraint"
+          },
+          "tool_calls": [
+            {
+              "name": "calculator",
+              "args": {
+                "expression": "(88 + 92 + 79 + 85) / 4"
+              }
+            }
+          ],
+          "expected_tools": [
+            "calculator"
+          ]
+        },
+        {
+          "name": "personal-language",
+          "input": "Translate 'Good morning, nice to meet you' into Japanese, and set a daily reminder to practice it.",
+          "output": "**Translation to Japanese:**\n* Japanese: おはようございます、初めまして。(Ohayou gozaimasu, hajimemashite.)\n* Polite/Common variant: おはようございます、よろしくお願いします。(Ohayou gozaimasu, yoroshiku onegaishimasu.)\n\n---\n\n**Reminder:**\nI cannot set a recurring or daily reminder because my reminder tool only supports one-time, short-term reminders (with relative times) and lacks recurring/scheduled calendar support. You will need to set a daily reminder using your device's built-in alarm or calendar app.",
+          "rubric": "Uses translate (to Japanese) then set_reminder to practice. Using web_search instead of translate is wrong.",
+          "meta": {
+            "domain": "personal",
+            "type": "distractor-chain"
+          },
+          "tool_calls": [
+            {
+              "name": "translate",
+              "args": {
+                "text": "Good morning, nice to meet you",
+                "to_lang": "Japanese"
+              }
+            }
+          ],
+          "expected_tools": [
+            "translate",
+            "set_reminder"
+          ]
+        },
+        {
+          "name": "personal-leap-year",
+          "input": "Without any tools, how many days are in a leap year?",
+          "output": "There are **366 days** in a leap year (with an extra day added to February, giving it 29 days instead of the usual 28).",
+          "rubric": "Answers '366' directly with no tool call. Calling any tool is a failure.",
+          "meta": {
+            "domain": "personal",
+            "type": "restraint"
+          }
+        },
+        {
+          "name": "personal-celsius",
+          "input": "It's 30 degrees Celsius outside — convert that to Fahrenheit for my American pen pal.",
+          "output": "30 degrees Celsius is **86 degrees Fahrenheit**.",
+          "rubric": "Uses unit_convert (C to F) and reports 86°F. Using convert_currency is wrong.",
+          "meta": {
+            "domain": "personal",
+            "type": "distractor"
+          },
+          "tool_calls": [
+            {
+              "name": "unit_convert",
+              "args": {
+                "from_unit": "C",
+                "to_unit": "F",
+                "value": 30
+              }
+            }
+          ],
+          "expected_tools": [
+            "unit_convert"
+          ]
+        }
+      ]
+    }
+  ],
+  "gate": [
+    "task_completion"
+  ],
+  "runs": 1
+}
