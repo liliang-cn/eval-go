@@ -2,7 +2,7 @@ module agentgolib
 
 go 1.25.5
 
-require github.com/liliang-cn/agent-go/v3 v3.76.0
+require github.com/liliang-cn/agent-go/v3 v3.77.0
 
 require (
 	github.com/0x51-dev/rdf v0.1.0 // indirect
