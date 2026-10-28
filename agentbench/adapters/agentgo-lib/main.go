@@ -202,19 +202,22 @@ func run() (map[string]any, map[string]any) {
 	lifeWorld := info["profile"] != nil && info["profile"] != "classic"
 	prompt := systemPrompt
 	if lifeWorld {
-		// What a real assistant app puts in its prompt: the date, the zone, who
-		// it is talking to. Without it "tomorrow at 8" has no answer.
-		//
-		// agent-go v3.76 also writes the HOST clock into its system prompt
-		// (buildSystemContext: time.Now(), hour granularity) and has no way for
-		// an embedder to set the clock. Left alone, a run at 00:30 tells the
-		// model it is half past midnight while the app says 09:00, and "明早"
-		// becomes "this morning". So the app's time is stated as the one to use.
-		prompt += fmt.Sprintf("\n\nCurrent local time: %v (%v), time zone %v. This is the user's actual current time; "+
-			"any other date or time in this prompt is the server's clock and does not apply to the user.", info["now"], info["weekday"], info["timezone"])
+		// Who the assistant is talking to, as a real assistant app says it.
 		if u, ok := info["user"].(map[string]any); ok {
-			prompt += fmt.Sprintf(" The user is %v (%v), living in %v.", u["name"], u["name_zh"], u["home_city"])
+			prompt += fmt.Sprintf("\n\nThe user is %v (%v), living in %v.", u["name"], u["name_zh"], u["home_city"])
 		}
+	}
+	// The app's clock and zone, not the host's: the task's world is pinned to
+	// one moment (tool_script.now, default 2026-10-29 09:00 Asia/Shanghai) so
+	// that "明早9点" has one right answer whenever the bench runs. agent-go
+	// states the time in its prompt itself; WithClock and WithTimezone make
+	// it state this one, advancing from the pinned moment as the run goes.
+	// The classic world keeps the host clock, so its old results stay
+	// comparable.
+	var appNow time.Time
+	var appLoc *time.Location
+	if lifeWorld {
+		appNow, appLoc = appClock(info)
 	}
 
 	client, err := pool.NewClient("bench", os.Getenv("OPENAI_BASE_URL"), os.Getenv("OPENAI_API_KEY"), os.Getenv("OPENAI_MODEL"))
@@ -222,7 +225,15 @@ func run() (map[string]any, map[string]any) {
 		return fail(err)
 	}
 	llm := &meteredLLM{Client: client, model: os.Getenv("OPENAI_MODEL")}
-	svc, err := agent.New("bench").WithLLM(llm).WithSystemPrompt(prompt).Build()
+	b := agent.New("bench").WithLLM(llm).WithSystemPrompt(prompt)
+	if !appNow.IsZero() {
+		began := time.Now()
+		b = b.WithClock(func() time.Time { return appNow.Add(time.Since(began)) })
+	}
+	if appLoc != nil {
+		b = b.WithTimezone(appLoc)
+	}
+	svc, err := b.Build()
 	if err != nil {
 		return fail(err)
 	}
@@ -368,6 +379,26 @@ func runEndSummary(res *agent.ExecutionResult) map[string]any {
 		return nil
 	}
 	return m
+}
+
+// appClock reads the world's pinned moment and zone from `benchtool info`.
+// A zero time means the world has none, and the host clock stays.
+func appClock(info map[string]any) (time.Time, *time.Location) {
+	var loc *time.Location
+	if tz, ok := info["timezone"].(string); ok && tz != "" {
+		if l, err := time.LoadLocation(tz); err == nil {
+			loc = l
+		}
+	}
+	now, _ := info["now"].(string)
+	t, err := time.Parse(time.RFC3339, now)
+	if err != nil {
+		return time.Time{}, loc
+	}
+	if loc != nil {
+		t = t.In(loc)
+	}
+	return t, loc
 }
 
 func benchtoolErr(err error) error {

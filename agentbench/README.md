@@ -275,7 +275,12 @@ conversation graded as if it had happened. The harness measures wall time itself
 counts every model request, auxiliary ones included; tool results are recorded;
 the final state comes from `benchtool state`. `runEndSummary` reads agent-go's
 forthcoming `run_end` summary from `ExecutionResult.Metadata` when a release
-provides it, without depending on it.
+provides it, without depending on it. In the life world it gives agent-go the
+world's pinned moment and zone (`WithClock`, `WithTimezone`, from
+`benchtool info`), so the time agent-go states in its prompt is the task's and
+a result does not depend on when the bench runs; that needs an agent-go newer
+than v3.76.0 (until it is tagged, `go mod edit -replace` the module to a local
+checkout).
 
 ## Adding scenarios
 
