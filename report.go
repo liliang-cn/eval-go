@@ -13,6 +13,9 @@ type SampleReport struct {
 	Meta    map[string]string `json:"meta,omitempty"`
 	Results []Result          `json:"results"`
 	Passed  bool              `json:"passed"`
+	// Gate is the metrics this sample was gated on under the auto gate (set by
+	// Comparison); empty otherwise.
+	Gate []string `json:"gate,omitempty"`
 }
 
 // Report is the full outcome of a Suite run.

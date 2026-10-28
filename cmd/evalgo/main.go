@@ -18,7 +18,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	evalgo "github.com/liliang-cn/eval-go"
 	"github.com/liliang-cn/eval-go/llmjudge"
@@ -94,146 +93,6 @@ func newRootCmd() *cobra.Command {
 	root.AddCommand(newDiffCmd())
 	root.AddCommand(newBenchCmd())
 	return root
-}
-
-// newBenchCmd runs the SAME tasks through SEVERAL agents and prints a task x
-// agent PASS/FAIL grid — a cross-framework / cross-config agent benchmark, all
-// from config files.
-func newBenchCmd() *cobra.Command {
-	var (
-		tasksPath   string
-		targetsPath string
-		metricNames string
-		gate        string
-		judgeMode   string
-		out         string
-		concurrency int
-		rps         float64
-		threshold   float64
-		timeout     time.Duration
-		cache       string
-		costIn      float64
-		costOut     float64
-		runs        int
-	)
-	cmd := &cobra.Command{
-		Use:   "bench",
-		Short: "Run tasks through several agents and compare them (PASS/FAIL grid)",
-		Long: "bench loads a tasks JSON (array of {name,input,expected_tools,rubric,files,...})\n" +
-			"and a targets JSON (array of {name,command,dir,env}), runs every task through\n" +
-			"every agent as a subprocess, scores each run, and prints a task x agent grid.\n" +
-			"Each agent program receives the task via EVAL_* env vars and prints a JSON\n" +
-			"RunOutput (or Sample) to stdout. The judge uses LLM_BASE_URL/LLM_API_KEY/LLM_MODEL.",
-		Args:          cobra.NoArgs,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			tasksRaw, err := readInput(tasksPath)
-			if err != nil {
-				return fmt.Errorf("read tasks: %w", err)
-			}
-			tasks, err := evalgo.LoadTasks(strings.NewReader(string(tasksRaw)))
-			if err != nil {
-				return err
-			}
-			targetsRaw, err := readInput(targetsPath)
-			if err != nil {
-				return fmt.Errorf("read targets: %w", err)
-			}
-			targets, err := evalgo.LoadTargets(strings.NewReader(string(targetsRaw)))
-			if err != nil {
-				return err
-			}
-
-			var judge evalgo.JudgeFunc
-			var meter *evalgo.Meter
-			switch judgeMode {
-			case "env":
-				judge, err = llmjudge.FromEnv()
-				if err != nil {
-					return fmt.Errorf("judge: %w", err)
-				}
-				if rps > 0 {
-					judge = evalgo.RateLimit(judge, rps, 2)
-				}
-				meter = evalgo.NewMeter(costIn, costOut)
-				judge = meter.Wrap(judge)
-				judge = evalgo.Cache(judge, cache)
-			case "none":
-			default:
-				return fmt.Errorf("unknown --judge mode %q (use env|none)", judgeMode)
-			}
-
-			metrics, err := evalgo.BuildMetrics(strings.Split(metricNames, ","), evalgo.MetricSpec{Judge: judge, Threshold: threshold})
-			if err != nil {
-				return err
-			}
-
-			var gateNames []string
-			for _, g := range strings.Split(gate, ",") {
-				if g = strings.TrimSpace(g); g != "" {
-					gateNames = append(gateNames, g)
-				}
-			}
-
-			cmp := evalgo.Comparison{
-				Targets:     targets,
-				Tasks:       tasks,
-				Metrics:     metrics,
-				Gate:        gateNames,
-				Concurrency: concurrency,
-				Timeout:     timeout,
-				Runs:        runs,
-				OnResult: func(target string, task evalgo.Task, s evalgo.Sample, err error) {
-					status := "ok"
-					if err != nil {
-						status = "ERR: " + err.Error()
-					}
-					fmt.Fprintf(cmd.ErrOrStderr(), "  %-12s %-20s %s (%d tool calls)\n", target, task.Name, status, len(s.ToolCalls))
-				},
-			}
-			fmt.Fprintf(cmd.ErrOrStderr(), "running %d tasks x %d agents ...\n", len(tasks), len(targets))
-			report := cmp.Run(cmd.Context())
-
-			fmt.Fprintln(cmd.OutOrStdout(), "\n=== AGENT COMPARISON ===")
-			report.RenderGrid(cmd.OutOrStdout())
-			report.WriteStats(cmd.OutOrStdout())
-			if meter != nil {
-				u := meter.Usage()
-				fmt.Fprintf(cmd.ErrOrStderr(), "\njudge: %d calls, ~%d tokens, %.1fs", u.Calls, u.TotalTokens, u.JudgeSeconds)
-				if u.Cost > 0 {
-					fmt.Fprintf(cmd.ErrOrStderr(), ", ~$%.4f", u.Cost)
-				}
-				fmt.Fprintln(cmd.ErrOrStderr())
-			}
-			if out != "" {
-				data, err := json.MarshalIndent(report, "", "  ")
-				if err != nil {
-					return err
-				}
-				return os.WriteFile(out, data, 0o644)
-			}
-			return nil
-		},
-	}
-	f := cmd.Flags()
-	f.StringVar(&tasksPath, "tasks", "", "JSON file of tasks (array of {name,input,expected_tools,rubric,files,...}); '-' for stdin (required)")
-	f.StringVar(&targetsPath, "targets", "", "JSON file of agents (array of {name,command,dir,env}); '-' for stdin (required)")
-	f.StringVarP(&metricNames, "metrics", "m", "tool_correctness,task_completion,step_efficiency,rubric", "comma-separated metrics to score each run")
-	f.StringVar(&gate, "gate", "task_completion,rubric", "metrics that must pass for a cell to PASS (empty = all metrics)")
-	f.StringVar(&judgeMode, "judge", "env", `judge mode: "env" (OpenAI-compatible via LLM_* env) or "none"`)
-	f.StringVarP(&out, "out", "o", "", "write the full comparison report (JSON) here")
-	f.IntVar(&concurrency, "concurrency", 1, "tasks run in parallel per agent")
-	f.IntVar(&runs, "runs", 1, "repeat the whole comparison N times and report pass@1 / pass@k / pass^k with the run-to-run spread; one run cannot separate close agents")
-	f.Float64Var(&rps, "rps", 4, "judge rate limit (requests/sec); <=0 disables")
-	f.Float64Var(&threshold, "threshold", 0.5, "pass threshold for judge metrics")
-	f.DurationVar(&timeout, "timeout", 8*time.Minute, "per-task wall-clock timeout")
-	f.StringVar(&cache, "cache", "", "directory to cache judge responses in")
-	f.Float64Var(&costIn, "cost-in", 0, "USD per 1M prompt tokens (for the cost estimate)")
-	f.Float64Var(&costOut, "cost-out", 0, "USD per 1M completion tokens (for the cost estimate)")
-	_ = cmd.MarkFlagRequired("tasks")
-	_ = cmd.MarkFlagRequired("targets")
-	return cmd
 }
 
 // newDiffCmd compares two JSON reports and flags regressions (CI gate).
@@ -314,7 +173,7 @@ func newRedteamCmd() *cobra.Command {
 				if rps > 0 {
 					judge = evalgo.RateLimit(judge, rps, 2)
 				}
-				rt.Judge = evalgo.Cache(judge, cache)
+				rt.Judge = evalgo.CacheSalted(judge, cache, judgeSalt())
 			}
 
 			samples, err := rt.Generate(cmd.Context())
@@ -388,7 +247,7 @@ func newGenCmd() *cobra.Command {
 			}
 			meter := evalgo.NewMeter(costIn, costOut)
 			judge = meter.Wrap(judge)
-			judge = evalgo.Cache(judge, cache) // no-op when --cache is unset
+			judge = evalgo.CacheSalted(judge, cache, judgeSalt()) // no-op when --cache is unset
 			sy := evalgo.Synthesizer{Judge: judge, PerContext: perContext, Evolutions: evolutions}
 
 			var samples []evalgo.Sample
@@ -498,7 +357,7 @@ func runEval(stdout io.Writer, o options) error {
 		// so usage reflects only real (billed) provider calls.
 		meter = evalgo.NewMeter(o.costIn, o.costOut)
 		judge = meter.Wrap(judge)
-		judge = evalgo.Cache(judge, o.cache) // no-op when --cache is unset
+		judge = evalgo.CacheSalted(judge, o.cache, judgeSalt()) // no-op when --cache is unset
 	case "none":
 	default:
 		return fmt.Errorf("unknown --judge mode %q (use env|none)", o.judgeMode)

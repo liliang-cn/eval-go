@@ -35,14 +35,21 @@ type ExecTargetSpec struct {
 // each backed by an ExecTarget.
 func LoadTargets(r io.Reader) ([]NamedTarget, error) {
 	var specs []ExecTargetSpec
-	if err := json.NewDecoder(r).Decode(&specs); err != nil {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields() // a misspelt "enviroment" must not run a target with no env
+	if err := dec.Decode(&specs); err != nil {
 		return nil, fmt.Errorf("parse targets JSON (want an array of {name,command,dir,env}): %w", err)
 	}
 	out := make([]NamedTarget, 0, len(specs))
+	seen := map[string]bool{}
 	for i, s := range specs {
 		if s.Name == "" {
 			return nil, fmt.Errorf("target %d: missing name", i)
 		}
+		if seen[s.Name] {
+			return nil, fmt.Errorf("target %q: duplicate name (results are keyed by it)", s.Name)
+		}
+		seen[s.Name] = true
 		if len(s.Command) == 0 {
 			return nil, fmt.Errorf("target %q: missing command", s.Name)
 		}
@@ -52,10 +59,34 @@ func LoadTargets(r io.Reader) ([]NamedTarget, error) {
 }
 
 // LoadTasks reads a JSON array of Task (the agent-benchmark input set).
+//
+// Unknown fields are an error, not ignored: a task that says "expected_tool" or
+// "chekc" would otherwise load with no ground truth and pass everything.
 func LoadTasks(r io.Reader) ([]Task, error) {
 	var tasks []Task
-	if err := json.NewDecoder(r).Decode(&tasks); err != nil {
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&tasks); err != nil {
 		return nil, fmt.Errorf("parse tasks JSON (want an array of tasks): %w", err)
+	}
+	seen := map[string]bool{}
+	for i, t := range tasks {
+		if t.Name == "" {
+			return nil, fmt.Errorf("task %d: missing name", i)
+		}
+		if seen[t.Name] {
+			return nil, fmt.Errorf("task %q: duplicate name (results are keyed by it)", t.Name)
+		}
+		seen[t.Name] = true
+		if strings.TrimSpace(t.Input) == "" {
+			return nil, fmt.Errorf("task %q: empty input", t.Name)
+		}
+		if err := t.Check.Validate(); err != nil {
+			return nil, fmt.Errorf("task %q: check: %w", t.Name, err)
+		}
+		if len(t.ToolScript) > 0 && !json.Valid(t.ToolScript) {
+			return nil, fmt.Errorf("task %q: tool_script is not valid JSON", t.Name)
+		}
 	}
 	return tasks, nil
 }
@@ -111,6 +142,15 @@ func (c Comparison) Run(ctx context.Context) ComparisonReport {
 		runs = 1
 	}
 	cr := ComparisonReport{Gate: c.Gate, Runs: runs}
+	auto := IsAutoGate(c.Gate)
+	available := map[string]bool{}
+	for _, m := range c.Metrics {
+		available[m.Name()] = true
+	}
+	byName := map[string]Task{}
+	for _, t := range c.Tasks {
+		byName[t.Name] = t
+	}
 	for run := 1; run <= runs; run++ {
 		for _, nt := range c.Targets {
 			var onResult func(Task, Sample, error)
@@ -127,6 +167,11 @@ func (c Comparison) Run(ctx context.Context) ComparisonReport {
 				OnResult:    onResult,
 			}
 			report, samples := bench.Run(ctx)
+			if auto {
+				for i := range report.Samples {
+					report.Samples[i].Gate = AutoGate(byName[report.Samples[i].Sample], available)
+				}
+			}
 			cr.Targets = append(cr.Targets, TargetReport{
 				Name: nt.Name, Run: run, Report: report, Samples: samples,
 			})
@@ -156,6 +201,13 @@ type TargetStats struct {
 	Min        float64   `json:"min"`
 	Max        float64   `json:"max"`
 	Each       []float64 `json:"each"` // per-run pass rate, in run order
+
+	// CILow/CIHigh is a 95% interval for Pass1, computed over tasks (see stats.go).
+	CILow  float64 `json:"ci_low"`
+	CIHigh float64 `json:"ci_high"`
+	Tasks  int     `json:"tasks"`
+	// Flaky lists the tasks solved in some runs but not all.
+	Flaky []string `json:"flaky,omitempty"`
 }
 
 // Spread is how far the target moved between its best and worst run. Two agents
@@ -212,11 +264,21 @@ func (cr ComparisonReport) Stats() []TargetStats {
 		}
 		n := float64(len(tasks))
 		s.Runs = runs
+		s.Tasks = len(tasks)
 		s.PassK /= n
 		s.PassCaretK /= n
 		if attempts > 0 {
 			s.Pass1 = float64(wins) / float64(attempts)
 		}
+		rates, _ := cr.taskRates()
+		var per []float64
+		for _, tr := range rates[name] {
+			per = append(per, tr.Rate)
+			if tr.Flaky() {
+				s.Flaky = append(s.Flaky, tr.Task)
+			}
+		}
+		_, s.CILow, s.CIHigh = meanCI(per)
 
 		// Per-run rates, for the spread.
 		s.Each = make([]float64, runs)
@@ -324,61 +386,69 @@ func (cr ComparisonReport) WriteStats(w io.Writer) {
 		return
 	}
 	fmt.Fprintf(w, "\n--- %d run(s) ---\n", cr.Runs)
-	fmt.Fprintf(w, "%-20s %-9s %-9s %-9s %-9s %s\n",
-		"agent", "pass@1", "pass@k", "pass^k", "spread", "per run")
+	fmt.Fprintf(w, "%-20s %-9s %-15s %-9s %-9s %-9s %-7s %s\n",
+		"agent", "pass@1", "95% CI", "pass@k", "pass^k", "spread", "flaky", "per run")
 	for _, s := range stats {
 		each := make([]string, len(s.Each))
 		for i, v := range s.Each {
 			each[i] = fmt.Sprintf("%.0f%%", v*100)
 		}
-		fmt.Fprintf(w, "%-20s %-9s %-9s %-9s %-9s %s\n",
+		fmt.Fprintf(w, "%-20s %-9s %-15s %-9s %-9s %-9s %-7s %s\n",
 			s.Name,
-			fmt.Sprintf("%.0f%%", s.Pass1*100),
+			fmt.Sprintf("%.1f%%", s.Pass1*100),
+			fmt.Sprintf("[%.0f, %.0f]", s.CILow*100, s.CIHigh*100),
 			fmt.Sprintf("%.0f%%", s.PassK*100),
 			fmt.Sprintf("%.0f%%", s.PassCaretK*100),
 			fmt.Sprintf("±%.0f", s.Spread()*100/2),
+			fmt.Sprintf("%d/%d", len(s.Flaky), s.Tasks),
 			strings.Join(each, " "))
 	}
 
 	if cr.Runs > 1 {
-		fmt.Fprintln(w, "\npass@k = solved at least once; pass^k = solved every run.")
-		fmt.Fprintln(w, "The gap between them is flakiness: tasks it can do but does not do reliably.")
+		fmt.Fprintln(w, "\npass@1 is the mean per-task pass rate; its interval is over tasks, not attempts.")
+		fmt.Fprintln(w, "pass@k = solved at least once; pass^k = solved every run; flaky = solved in some runs only.")
+		for _, s := range stats {
+			if len(s.Flaky) > 0 {
+				fmt.Fprintf(w, "  flaky %-14s %s\n", s.Name+":", strings.Join(s.Flaky, ", "))
+			}
+		}
 	}
 
 	if len(stats) > 1 {
-		top, second := stats[0], stats[1]
-		gap := (top.Pass1 - second.Pass1) * 100
-		noise := max(top.Spread(), second.Spread()) * 100
-		d := cr.Compare(top.Name, second.Name)
-		fmt.Fprintf(w, "\n%s vs %s: %+.0f points; discordant tasks %d/%d, sign test p=%.3f\n",
-			top.Name, second.Name, gap, d.AOnly, d.BOnly, d.PValue)
-		switch {
-		case cr.Runs < 2:
-			fmt.Fprintln(w, "One run cannot separate them — repeat with --runs to find out.")
-		case gap < noise:
-			fmt.Fprintf(w, "That gap is inside the %.0f-point run-to-run spread: not separated.\n", noise)
-		case d.PValue >= 0.05:
-			fmt.Fprintln(w, "Not significant at p<0.05: not separated.")
-		default:
-			fmt.Fprintf(w, "%s is ahead (p<0.05).\n", top.Name)
+		fmt.Fprintln(w, "\n--- paired comparison (per-task pass rates, sign-flip permutation test) ---")
+		for i := 0; i < len(stats); i++ {
+			for j := i + 1; j < len(stats); j++ {
+				p, err := cr.Paired(stats[i].Name, stats[j].Name)
+				if err != nil {
+					continue
+				}
+				fmt.Fprintln(w, p.String())
+			}
+		}
+		if cr.Runs < 2 {
+			fmt.Fprintln(w, "One run per task: a flaky task looks like a win or a loss. Repeat with --runs 3 before ranking.")
 		}
 	}
 }
 
-// gateMatches reports whether a Result metric name satisfies a gate name. It is
-// lenient so a gate written as the registry key matches the metric's reported
-// name: "rubric" matches "rubric_judge", and "nonempty" matches "non_empty".
+// gateMatches reports whether a Result metric name satisfies a gate name: the
+// same name, or a registry key whose metric reports under another name
+// ("rubric" -> "rubric_judge"). Nothing fuzzier: a near-miss must fail
+// ResolveGate up front, not match by accident.
 func gateMatches(resultMetric, gate string) bool {
-	if resultMetric == gate || resultMetric == gate+"_judge" {
-		return true
-	}
-	norm := func(s string) string { return strings.ReplaceAll(s, "_", "") }
-	return norm(resultMetric) == norm(gate)
+	return resultMetric == canonicalMetric(gate)
 }
 
 // samplePassed reports whether a SampleReport passes the gate: every gate metric
-// present must have passed. An empty gate means every metric must pass.
+// present must have passed. An empty gate means every metric must pass; the
+// auto gate uses the per-sample gate Comparison recorded.
 func samplePassed(sr SampleReport, gate []string) bool {
+	if IsAutoGate(gate) {
+		gate = sr.Gate
+		if len(gate) == 0 {
+			return sr.Passed
+		}
+	}
 	if len(gate) == 0 {
 		return sr.Passed
 	}
@@ -451,7 +521,10 @@ func (cr ComparisonReport) RenderGrid(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 	}
-	if len(cr.Gate) > 0 {
+	switch {
+	case IsAutoGate(cr.Gate):
+		fmt.Fprintln(w, "\ngate: auto (per task: rubric_judge if it has a rubric, tool_trajectory if it has a check, else task_completion)")
+	case len(cr.Gate) > 0:
 		fmt.Fprintf(w, "\ngate: %s (all must pass)\n", strings.Join(cr.Gate, ", "))
 	}
 }
