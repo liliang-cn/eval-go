@@ -204,7 +204,14 @@ func run() (map[string]any, map[string]any) {
 	if lifeWorld {
 		// What a real assistant app puts in its prompt: the date, the zone, who
 		// it is talking to. Without it "tomorrow at 8" has no answer.
-		prompt += fmt.Sprintf("\n\nCurrent local time: %v (%v), time zone %v.", info["now"], info["weekday"], info["timezone"])
+		//
+		// agent-go v3.76 also writes the HOST clock into its system prompt
+		// (buildSystemContext: time.Now(), hour granularity) and has no way for
+		// an embedder to set the clock. Left alone, a run at 00:30 tells the
+		// model it is half past midnight while the app says 09:00, and "明早"
+		// becomes "this morning". So the app's time is stated as the one to use.
+		prompt += fmt.Sprintf("\n\nCurrent local time: %v (%v), time zone %v. This is the user's actual current time; "+
+			"any other date or time in this prompt is the server's clock and does not apply to the user.", info["now"], info["weekday"], info["timezone"])
 		if u, ok := info["user"].(map[string]any); ok {
 			prompt += fmt.Sprintf(" The user is %v (%v), living in %v.", u["name"], u["name_zh"], u["home_city"])
 		}
