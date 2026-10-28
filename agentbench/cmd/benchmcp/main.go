@@ -10,8 +10,9 @@
 //
 //	goose run --with-extension "./bin/benchmcp" --text "..."
 //
-// The tool behaviour is identical to cmd/benchagent's, because both call
-// tools.Run — same currency table, same calculator, same canned facts.
+// The tool behaviour is identical to cmd/benchagent's and cmd/benchtool's,
+// because all three go through tools.Env — same profile, same per-task script
+// (EVAL_TOOL_SCRIPT), same state file (BENCH_STATE).
 package main
 
 import (
@@ -32,7 +33,8 @@ func main() {
 		&mcp.ServerOptions{HasTools: true},
 	)
 
-	for _, t := range tools.All() {
+	env := tools.MustOpen()
+	for _, t := range env.Tools() {
 		name := t.Name // capture per iteration; the handler outlives this loop
 		server.AddTool(
 			&mcp.Tool{Name: t.Name, Description: t.Description, InputSchema: t.Schema},
@@ -45,7 +47,7 @@ func main() {
 				}
 				// JSON, not prose: the caller is a model deciding what to do
 				// next, and a stable shape is easier to chain than a sentence.
-				out, err := json.Marshal(tools.Run(name, args))
+				out, err := json.Marshal(env.Call(name, args))
 				if err != nil {
 					return nil, err
 				}

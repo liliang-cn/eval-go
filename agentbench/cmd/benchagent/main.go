@@ -38,9 +38,9 @@ type toolCall struct {
 	} `json:"function"`
 }
 
-func chat(base, key, model string, msgs []message) (message, error) {
+func chat(base, key, model string, msgs []message, defs []map[string]any) (message, error) {
 	body, _ := json.Marshal(map[string]any{
-		"model": model, "messages": msgs, "tools": tools.OpenAIDefinitions(), "temperature": 0,
+		"model": model, "messages": msgs, "tools": defs, "temperature": 0,
 	})
 	req, _ := http.NewRequest("POST", strings.TrimRight(base, "/")+"/chat/completions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -74,45 +74,77 @@ func main() {
 	base := env("OPENAI_BASE_URL", "http://localhost:11434/v1")
 	key := env("OPENAI_API_KEY", "ollama")
 	model := os.Getenv("OPENAI_MODEL")
-	input := os.Getenv("EVAL_INPUT")
-	const maxSteps = 5
+	const maxSteps = 8
 
-	msgs := []message{
-		{Role: "system", Content: "You are a helpful assistant with access to tools. Call the appropriate tool(s) to accomplish the user's request, then give a brief final answer."},
-		{Role: "user", Content: input},
+	world := tools.MustOpen()
+	var defs []map[string]any
+	for _, t := range world.Tools() {
+		defs = append(defs, map[string]any{"type": "function", "function": map[string]any{
+			"name": t.Name, "description": t.Description, "parameters": t.Schema,
+		}})
+	}
+	sys := "You are a helpful assistant with access to tools. Call the appropriate tool(s) to accomplish the user's request, then give a brief final answer."
+	if world.Profile() != "classic" {
+		info := world.Info()
+		sys += fmt.Sprintf(" The user's current local time is %v (%v, %v).", info["now"], info["weekday"], info["timezone"])
 	}
 
+	userTurns := []string{os.Getenv("EVAL_INPUT")}
+	var more []string
+	_ = json.Unmarshal([]byte(os.Getenv("EVAL_TURNS")), &more)
+	userTurns = append(userTurns, more...)
+
 	type tcOut struct {
-		Name string         `json:"name"`
-		Args map[string]any `json:"args"`
+		Name   string         `json:"name"`
+		Args   map[string]any `json:"args"`
+		Output string         `json:"output,omitempty"`
+		Turn   int            `json:"turn,omitempty"`
 	}
 	var calls []tcOut
 	var trajectory []string
+	var turns []map[string]string
 	var final string
+	modelCalls := 0
+	msgs := []message{{Role: "system", Content: sys}}
 
-	for range maxSteps {
-		msg, err := chat(base, key, model, msgs)
-		if err != nil {
-			final = "RUN ERROR: " + err.Error()
-			break
+	for ti, input := range userTurns {
+		msgs = append(msgs, message{Role: "user", Content: input})
+		turns = append(turns, map[string]string{"role": "user", "content": input})
+		final = ""
+		for range maxSteps {
+			msg, err := chat(base, key, model, msgs, defs)
+			modelCalls++
+			if err != nil {
+				final = "RUN ERROR: " + err.Error()
+				break
+			}
+			msgs = append(msgs, msg)
+			if len(msg.ToolCalls) == 0 {
+				final = msg.Content
+				break
+			}
+			for _, c := range msg.ToolCalls {
+				args := map[string]any{}
+				_ = json.Unmarshal([]byte(c.Function.Arguments), &args)
+				aj, _ := json.Marshal(args)
+				trajectory = append(trajectory, fmt.Sprintf("called %s(%s)", c.Function.Name, aj))
+				result, _ := json.Marshal(world.Call(c.Function.Name, args))
+				calls = append(calls, tcOut{Name: c.Function.Name, Args: args, Output: string(result), Turn: ti + 1})
+				msgs = append(msgs, message{Role: "tool", ToolCallID: c.ID, Content: string(result)})
+			}
 		}
-		if len(msg.ToolCalls) == 0 {
-			final = msg.Content
-			break
-		}
-		msgs = append(msgs, msg)
-		for _, c := range msg.ToolCalls {
-			args := map[string]any{}
-			_ = json.Unmarshal([]byte(c.Function.Arguments), &args)
-			calls = append(calls, tcOut{Name: c.Function.Name, Args: args})
-			aj, _ := json.Marshal(args)
-			trajectory = append(trajectory, fmt.Sprintf("called %s(%s)", c.Function.Name, aj))
-			result, _ := json.Marshal(tools.Run(c.Function.Name, args))
-			msgs = append(msgs, message{Role: "tool", ToolCallID: c.ID, Content: string(result)})
-		}
+		turns = append(turns, map[string]string{"role": "assistant", "content": final})
 	}
 
-	out, _ := json.Marshal(map[string]any{"output": final, "tool_calls": calls, "trajectory": trajectory})
+	res := map[string]any{"output": final, "tool_calls": calls, "trajectory": trajectory,
+		"usage": map[string]any{"model_calls": modelCalls, "tool_calls": len(calls), "source": "benchagent"}}
+	if len(userTurns) > 1 {
+		res["turns"] = turns
+	}
+	if world.Profile() != "classic" {
+		res["state"] = world.State()
+	}
+	out, _ := json.Marshal(res)
 	fmt.Println(string(out))
 }
 

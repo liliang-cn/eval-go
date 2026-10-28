@@ -2,7 +2,14 @@
 // speak MCP — one process per call, JSON in, JSON out.
 //
 //	benchtool list                      # [{name, description, params:{arg:desc}}]
+//	benchtool schema                    # [{name, description, parameters:<JSON Schema>}]
 //	benchtool call get_weather '{"city":"Paris"}'
+//	benchtool state                     # the tool world's current state (JSON)
+//	benchtool info                      # {profile, now, weekday, timezone, user}
+//
+// Which tools exist and how they behave comes from the environment (see
+// tools.Env): EVAL_TOOL_SCRIPT (the task's tool_script), BENCH_PROFILE, and
+// BENCH_STATE (the state file every call of one run shares).
 //
 // The Python guest adapters (LangGraph / CrewAI / smolagents) bind plain
 // callables, and reimplementing ten tools in Python would put a second currency
@@ -18,11 +25,14 @@ import (
 	"agentbench/tools"
 )
 
+const usage = "usage: benchtool list | schema | call <name> <json-args> | state | info"
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: benchtool list | benchtool call <name> <json-args>")
+		fmt.Fprintln(os.Stderr, usage)
 		os.Exit(2)
 	}
+	env := tools.MustOpen()
 
 	switch os.Args[1] {
 	case "list":
@@ -33,7 +43,7 @@ func main() {
 			Required    []string          `json:"required"`
 		}
 		var out []spec
-		for _, t := range tools.All() {
+		for _, t := range env.Tools() {
 			s := spec{Name: t.Name, Description: t.Description, Params: map[string]string{}}
 			if props, ok := t.Schema["properties"].(map[string]any); ok {
 				for arg, raw := range props {
@@ -60,6 +70,21 @@ func main() {
 		enc.SetIndent("", "  ")
 		_ = enc.Encode(out)
 
+	case "schema":
+		// The exact JSON Schema every front end serves, for a runner that
+		// registers tools itself rather than mounting benchmcp. `list` drops the
+		// argument types, and a number typed as a string is a different tool.
+		type spec struct {
+			Name        string         `json:"name"`
+			Description string         `json:"description"`
+			Parameters  map[string]any `json:"parameters"`
+		}
+		var out []spec
+		for _, t := range env.Tools() {
+			out = append(out, spec{t.Name, t.Description, t.Schema})
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(out)
+
 	case "call":
 		if len(os.Args) < 3 {
 			fmt.Fprintln(os.Stderr, "benchtool call <name> <json-args>")
@@ -73,11 +98,17 @@ func main() {
 				os.Exit(2)
 			}
 		}
-		out, _ := json.Marshal(tools.Run(name, args))
+		out, _ := json.Marshal(env.Call(name, args))
 		fmt.Println(string(out))
 
+	case "state":
+		_ = json.NewEncoder(os.Stdout).Encode(env.State())
+
+	case "info":
+		_ = json.NewEncoder(os.Stdout).Encode(env.Info())
+
 	default:
-		fmt.Fprintln(os.Stderr, "usage: benchtool list | benchtool call <name> <json-args>")
+		fmt.Fprintln(os.Stderr, usage)
 		os.Exit(2)
 	}
 }
