@@ -269,7 +269,18 @@ func runLife(c *call) any {
 		if !c.has("repeat") {
 			extra["repeat"] = "none"
 		}
-		return map[string]any{"ok": true, "reminder": c.create("reminders", "rem", extra)}
+		var same []map[string]any
+		for _, r := range c.items("reminders") {
+			if t, ok := itemTime(r, "remind_at"); ok && t.Equal(at) && r["status"] == "pending" {
+				same = append(same, brief(r, "id", "title", "remind_at"))
+			}
+		}
+		res := map[string]any{"ok": true, "reminder": c.create("reminders", "rem", extra)}
+		if len(same) > 0 {
+			res["warning"] = "another pending reminder is already set for this exact time"
+			res["existing"] = same
+		}
+		return res
 	case "list_reminders":
 		status := c.str("status")
 		if status == "" {
@@ -537,6 +548,18 @@ func runLife(c *call) any {
 			extra["date"] = c.env.now().Format("2006-01-02")
 		}
 		return map[string]any{"ok": true, "expense": c.create("expenses", "exp", extra)}
+	case "update_expense":
+		e, err := c.byID("expenses", "expense_id")
+		if err != nil {
+			return err
+		}
+		if amt, ok := c.num("amount"); ok && amt <= 0 {
+			return errResult("INVALID_ARGUMENT", false, "amount must be positive")
+		}
+		c.update(e, "expense_id")
+		return map[string]any{"ok": true, "expense": e}
+	case "delete_expense":
+		return c.deleteBy("expenses", "expense_id")
 	case "list_expenses":
 		var out []map[string]any
 		for _, e := range c.within(c.items("expenses"), "date") {

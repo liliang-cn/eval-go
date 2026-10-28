@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 // A profile is one tool world. "classic" is the original ten tools, kept
@@ -250,6 +251,16 @@ func matchesQuery(it map[string]any, q string, fields ...string) bool {
 	if strings.Contains(h, q) {
 		return true
 	}
+	// A Chinese query has no spaces to split on: "王医生" should find "王丽医生"
+	// the way a real address book does, so every Han character must appear.
+	if hasHan(q) && !strings.Contains(q, " ") {
+		for _, r := range q {
+			if unicode.Is(unicode.Han, r) && !strings.ContainsRune(h, r) {
+				return false
+			}
+		}
+		return true
+	}
 	// every word of the query somewhere in the fields
 	words := strings.Fields(q)
 	if len(words) < 2 {
@@ -261,6 +272,15 @@ func matchesQuery(it map[string]any, q string, fields ...string) bool {
 		}
 	}
 	return true
+}
+
+func hasHan(s string) bool {
+	for _, r := range s {
+		if unicode.Is(unicode.Han, r) {
+			return true
+		}
+	}
+	return false
 }
 
 func round2(f float64) float64 { return math.Round(f*100) / 100 }
