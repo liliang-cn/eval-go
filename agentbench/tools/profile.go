@@ -274,6 +274,34 @@ func matchesQuery(it map[string]any, q string, fields ...string) bool {
 	return true
 }
 
+// looseMatch is the recall a memory or notes search should have: any word of
+// an English query, or any two-character run of a Chinese one ("飞机座位偏好"
+// finds "坐飞机喜欢靠过道的座位"). An exact-substring memory would fail the
+// agent for phrasing its query naturally.
+func looseMatch(it map[string]any, q string, fields ...string) bool {
+	if matchesQuery(it, q, fields...) {
+		return true
+	}
+	var hay strings.Builder
+	for _, f := range fields {
+		hay.WriteString(strings.ToLower(fmt.Sprint(it[f])))
+		hay.WriteByte(' ')
+	}
+	h := hay.String()
+	rs := []rune(strings.ToLower(q))
+	for i := 0; i+1 < len(rs); i++ {
+		if unicode.Is(unicode.Han, rs[i]) && unicode.Is(unicode.Han, rs[i+1]) && strings.Contains(h, string(rs[i:i+2])) {
+			return true
+		}
+	}
+	for _, w := range strings.FieldsFunc(strings.ToLower(q), func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) || unicode.Is(unicode.Han, r) }) {
+		if len(w) >= 3 && strings.Contains(h, w) {
+			return true
+		}
+	}
+	return false
+}
+
 func hasHan(s string) bool {
 	for _, r := range s {
 		if unicode.Is(unicode.Han, r) {

@@ -143,7 +143,7 @@ func runLife(c *call) any {
 	case "search_notes":
 		var out []map[string]any
 		for _, n := range c.items("notes") {
-			if matchesQuery(n, c.str("query"), "title", "content", "tags") {
+			if looseMatch(n, c.str("query"), "title", "content", "tags") {
 				out = append(out, n)
 			}
 		}
@@ -401,7 +401,7 @@ func runLife(c *call) any {
 			if !matchesQuery(m, c.str("query"), "subject", "body", "from") {
 				continue
 			}
-			if f := c.str("from"); f != "" && !strings.Contains(strings.ToLower(fmt.Sprint(m["from"])), strings.ToLower(f)) {
+			if f := c.str("from"); f != "" && !c.fromMatches(fmt.Sprint(m["from"]), f) {
 				continue
 			}
 			if b, _ := c.args["unread_only"].(bool); b && m["read"] == true {
@@ -751,7 +751,7 @@ func runLife(c *call) any {
 	case "memory_recall":
 		var out []map[string]any
 		for _, m := range c.items("memories") {
-			if matchesQuery(m, c.str("query"), "content", "tags") || anyWord(m, c.str("query")) {
+			if looseMatch(m, c.str("query"), "content", "tags") {
 				out = append(out, m)
 			}
 		}
@@ -913,6 +913,22 @@ func (c *call) deleteBy(coll, idArg string) any {
 	return map[string]any{"ok": true, "deleted": c.str(idArg)}
 }
 
+// fromMatches lets a sender filter name a person the way a mail client does:
+// "Kenji" or "周浩" finds mail from that contact's address.
+func (c *call) fromMatches(addr, filter string) bool {
+	addr, f := strings.ToLower(addr), strings.ToLower(strings.TrimSpace(filter))
+	if strings.Contains(addr, f) {
+		return true
+	}
+	for _, ct := range c.items("contacts") {
+		email := strings.ToLower(fmt.Sprint(ct["email"]))
+		if email != "" && email == addr && matchesQuery(ct, f, "name", "name_zh", "relationship") {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *call) file(path string) map[string]any {
 	for _, f := range c.items("files") {
 		if f["path"] == path {
@@ -1050,16 +1066,6 @@ func nonNilAny(s []any) []any {
 		return []any{}
 	}
 	return s
-}
-
-func anyWord(m map[string]any, q string) bool {
-	h := strings.ToLower(fmt.Sprint(m["content"]) + " " + fmt.Sprint(m["tags"]))
-	for _, w := range strings.FieldsFunc(strings.ToLower(q), func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) }) {
-		if len([]rune(w)) >= 2 && strings.Contains(h, w) {
-			return true
-		}
-	}
-	return false
 }
 
 func detectLang(s string) string {

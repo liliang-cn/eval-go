@@ -205,3 +205,16 @@ func TestUnitsAndTimezones(t *testing.T) {
 		t.Fatalf("15:00 London -> Shanghai: %v", r)
 	}
 }
+
+func TestLooseRecallAndSenderNames(t *testing.T) {
+	e := openEnv(t, `{"profile":"life","seed":{"memories":[{"id":"mem_1","content":"用户坐飞机喜欢靠过道的座位（aisle seat）"}],
+		"inbox":[{"id":"msg_1","from":"k.sato@sato-trading.example","subject":"NDA","body":"x"}]}}`, "")
+	r := asMap(t, e.Call("memory_recall", map[string]any{"query": "飞机座位偏好"}))
+	if len(r["memories"].([]any)) != 1 {
+		t.Fatalf("a natural Chinese query should recall the memory: %v", r)
+	}
+	r = asMap(t, e.Call("search_emails", map[string]any{"from": "Kenji"}))
+	if len(r["emails"].([]any)) != 1 {
+		t.Fatalf("a sender filter by contact name should find the address: %v", r)
+	}
+}
