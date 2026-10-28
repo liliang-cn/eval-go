@@ -129,14 +129,14 @@ Think briefly, then return STRICTLY JSON and nothing else:
 
 TASK:
 %s
-
+%s
 AGENT TRAJECTORY:
 %s
 
 FINAL OUTPUT:
 %s
 
-JSON:`, s.Input, trajectoryText(s), s.Output)
+JSON:`, s.Input, conversationBlock(s), trajectoryText(s), s.Output)
 		v, err := callVerdict(ctx, judge, prompt)
 		if err != nil {
 			return Result{}, err
@@ -252,7 +252,16 @@ func toSet(items []string) map[string]struct{} {
 	return m
 }
 
-// formatToolCalls renders tool calls as "1. name({json args})" for a judge prompt.
+// Judge prompts carry the recorded calls, arguments and results, but bounded:
+// one runaway search result must not push the rubric out of the judge's view.
+const (
+	judgeMaxCallOutput = 600   // runes of one tool result shown to the judge
+	judgeMaxToolText   = 14000 // runes of all tool calls together
+	judgeMaxStateText  = 4000  // runes of the final tool state
+)
+
+// formatToolCalls renders tool calls as "1. name({json args}) -> result" for a
+// judge prompt, each result clipped and the whole block bounded.
 func formatToolCalls(calls []ToolCall) string {
 	var b strings.Builder
 	for i, c := range calls {
@@ -262,9 +271,48 @@ func formatToolCalls(calls []ToolCall) string {
 				args = string(j)
 			}
 		}
-		fmt.Fprintf(&b, "%d. %s(%s)\n", i+1, c.Name, args)
+		line := ""
+		if c.Turn > 0 {
+			line = fmt.Sprintf("[turn %d] ", c.Turn)
+		}
+		line += fmt.Sprintf("%d. %s(%s)", i+1, c.Name, clipRunes(args, judgeMaxCallOutput))
+		if out := strings.TrimSpace(c.Output); out != "" {
+			line += " -> " + clipRunes(strings.ReplaceAll(out, "\n", " "), judgeMaxCallOutput)
+		}
+		line += "\n"
+		if b.Len()+len(line) > judgeMaxToolText {
+			fmt.Fprintf(&b, "... %d more call(s) not shown\n", len(calls)-i)
+			break
+		}
+		b.WriteString(line)
 	}
 	return b.String()
+}
+
+// clipRunes shortens s to n runes, saying how much was cut.
+func clipRunes(s string, n int) string {
+	r := []rune(s)
+	if len(r) <= n {
+		return s
+	}
+	return string(r[:n]) + fmt.Sprintf("...(+%d chars)", len(r)-n)
+}
+
+// conversationText renders a multi-turn transcript for a judge prompt.
+func conversationText(turns []Turn) string {
+	var b strings.Builder
+	for _, t := range turns {
+		fmt.Fprintf(&b, "%s: %s\n", strings.ToUpper(t.Role), clipRunes(strings.TrimSpace(t.Content), 2000))
+	}
+	return b.String()
+}
+
+// conversationBlock is the CONVERSATION section for a multi-turn sample, or "".
+func conversationBlock(s Sample) string {
+	if len(s.Turns) == 0 {
+		return ""
+	}
+	return "\nCONVERSATION (the user's turns were scripted; judge the whole exchange):\n" + conversationText(s.Turns)
 }
 
 // trajectoryText renders the recorded run for a judge prompt, combining the

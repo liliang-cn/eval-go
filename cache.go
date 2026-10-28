@@ -21,13 +21,22 @@ import (
 // rate limiter entirely: RateLimit(Cache(judge, dir), rps, burst) caches, then
 // paces only the misses — or Cache(RateLimit(judge,...), dir) to pace nothing on
 // a hit. The CLI uses the latter.
-func Cache(j JudgeFunc, dir string) JudgeFunc {
+func Cache(j JudgeFunc, dir string) JudgeFunc { return CacheSalted(j, dir, "") }
+
+// CacheSalted is Cache with the key also covering salt — pass the judge model
+// (and anything else that changes its answer). Without it, switching
+// LLM_MODEL silently reuses the previous judge's verdicts for every prompt that
+// did not change.
+func CacheSalted(j JudgeFunc, dir, salt string) JudgeFunc {
 	if dir == "" {
 		return j
 	}
 	c := &judgeCache{dir: dir, mem: map[string]string{}}
 	return func(ctx context.Context, prompt string) (string, error) {
 		key := promptKey(prompt)
+		if salt != "" {
+			key = promptKey(salt + "\x00" + prompt)
+		}
 		if v, ok := c.load(key); ok {
 			return v, nil
 		}

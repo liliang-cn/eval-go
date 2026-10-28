@@ -15,6 +15,7 @@ package evalgo
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 	"sync"
 )
@@ -47,6 +48,11 @@ type Sample struct {
 	// --- multi-turn conversation (for conversational metrics) ---
 	Turns   []Turn `json:"turns,omitempty"`   // the full chat history, in order
 	Persona string `json:"persona,omitempty"` // the role the assistant should hold (for role_adherence)
+
+	// --- deterministic run checks (from a Task; for tool_trajectory) ---
+	Check *ToolCheck      `json:"check,omitempty"` // assertions on calls, arguments, order, answer and state
+	State json.RawMessage `json:"state,omitempty"` // the tool environment's final state, if the target reported it
+	Usage *RunUsage       `json:"usage,omitempty"` // what the run cost (model/tool calls, tokens, time)
 }
 
 // Turn is one message in a multi-turn conversation.
@@ -60,6 +66,7 @@ type ToolCall struct {
 	Name   string         `json:"name"`             // tool / function name invoked
 	Args   map[string]any `json:"args,omitempty"`   // arguments the agent passed
 	Output string         `json:"output,omitempty"` // tool result, if captured (helps the judge)
+	Turn   int            `json:"turn,omitempty"`   // 1-based conversation turn it happened in (multi-turn tasks)
 }
 
 // Result is the outcome of one metric on one sample. Score is normalized 0..1.

@@ -30,19 +30,27 @@ func RubricJudge(judge JudgeFunc, passThreshold float64) Metric {
 		}
 		prompt := fmt.Sprintf(`You are a strict, objective evaluation judge.
 Decide whether the ACTUAL OUTPUT satisfies the CRITERION for the given INPUT.
+The tool calls, their arguments and their results were recorded by the harness:
+they are ground truth. What the assistant SAYS it did is not — if it claims an
+action that no recorded call performed, that claim is false.
+Judge only against the CRITERION; a refusal or a clarifying question is correct
+when the criterion says so.
 Think briefly, then return STRICTLY a JSON object and nothing else:
 {"passed": <bool>, "score": <number 0.0-1.0>, "reason": "<short justification>"}
 
 INPUT:
 %s
-
+%s
 CRITERION:
 %s
 
 ACTUAL OUTPUT:
 %s
 
-JSON:`, s.Input, s.Rubric, s.Output)
+TOOL CALLS THE AGENT ACTUALLY MADE (recorded by the harness, in order, with results):
+%s
+%s
+JSON:`, s.Input, conversationBlock(s), s.Rubric, s.Output, toolCallsOrNone(s.ToolCalls), stateBlock(s))
 
 		v, err := callVerdict(ctx, judge, prompt)
 		if err != nil {
@@ -51,6 +59,26 @@ JSON:`, s.Input, s.Rubric, s.Output)
 		passed := v.Passed && v.Score >= passThreshold
 		return Result{Metric: "rubric_judge", Score: v.Score, Passed: passed, Reason: v.Reason}, nil
 	}}
+}
+
+// toolCallsOrNone shows the judge what the agent invoked. A criterion like
+// "uses translate, then set_reminder" cannot be checked from the final text: an
+// agent that called both and answered in one sentence reads exactly like one
+// that called neither and claimed it did.
+func toolCallsOrNone(calls []ToolCall) string {
+	if len(calls) == 0 {
+		return "(none)"
+	}
+	return strings.TrimRight(formatToolCalls(calls), "\n")
+}
+
+// stateBlock shows the judge the tool environment's final state, when the
+// target reported one: for "move it to 8pm" the state is the outcome.
+func stateBlock(s Sample) string {
+	if len(s.State) == 0 {
+		return ""
+	}
+	return "\nFINAL TOOL STATE (recorded by the harness):\n" + clipRunes(string(s.State), judgeMaxStateText) + "\n"
 }
 
 // callVerdict runs a judge prompt and parses a {passed,score,reason} verdict.

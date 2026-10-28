@@ -27,9 +27,11 @@ var registry = map[string]metricFactory{
 	"answer_relevancy":  {true, func(s MetricSpec) Metric { return AnswerRelevancy(s.Judge, s.Threshold) }},
 	"context_precision": {true, func(s MetricSpec) Metric { return ContextualPrecision(s.Judge, s.Threshold) }},
 	"rubric":            {true, func(s MetricSpec) Metric { return RubricJudge(s.Judge, s.Threshold) }},
+	"rubric_judge":      {true, func(s MetricSpec) Metric { return RubricJudge(s.Judge, s.Threshold) }}, // the name it reports under
 
 	// agent metrics (evaluate a recorded agent run on the Sample)
 	"tool_correctness":     {false, func(MetricSpec) Metric { return ToolCorrectness() }},
+	"tool_trajectory":      {false, func(MetricSpec) Metric { return ToolTrajectory() }},
 	"argument_correctness": {true, func(s MetricSpec) Metric { return ArgumentCorrectness(s.Judge, s.Threshold) }},
 	"task_completion":      {true, func(s MetricSpec) Metric { return TaskCompletion(s.Judge, s.Threshold) }},
 	"step_efficiency":      {true, func(s MetricSpec) Metric { return StepEfficiency(s.Judge, s.Threshold) }},
@@ -83,12 +85,24 @@ func BuildMetrics(names []string, spec MetricSpec) ([]Metric, error) {
 		}
 		f, ok := registry[name]
 		if !ok {
+			if strings.EqualFold(name, "auto") {
+				return nil, fmt.Errorf("%q is a gate, not a metric (known metrics: %s)", name, strings.Join(RegisteredMetrics(), ", "))
+			}
 			return nil, fmt.Errorf("unknown metric %q (known: %s)", name, strings.Join(RegisteredMetrics(), ", "))
 		}
 		if f.needsJudge && spec.Judge == nil {
 			return nil, fmt.Errorf("metric %q requires a judge (configure an LLM judge)", name)
 		}
-		out = append(out, f.build(spec))
+		m := f.build(spec)
+		for _, prev := range out {
+			if prev.Name() == m.Name() {
+				return nil, fmt.Errorf("metric %q requested twice (as %q); it would be scored twice", m.Name(), name)
+			}
+		}
+		out = append(out, m)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no metrics requested (known: %s)", strings.Join(RegisteredMetrics(), ", "))
 	}
 	return out, nil
 }
