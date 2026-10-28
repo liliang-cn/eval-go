@@ -23,7 +23,7 @@ Everyone can call *a* tool. What separates models is the hard part:
   frontier model tested failed the "book a flight" trap by faking it with a tool.
 - **Long chains** — 3–5 dependent tool calls in the correct order, no missing steps.
 
-## Task set
+## Original task set
 
 `tasks/core-30.json` — **30 scenarios**, 5 each across **home, work, health,
 travel, finance, personal**. Curated (not generated) for diagnostic value: heavy
@@ -66,59 +66,224 @@ goose run --with-extension "$PWD/bin/benchmcp" --text "..."
 # any other MCP client: point it at ./bin/benchmcp over stdio
 ```
 
+## Suites
+
+| file | tasks | tools | what it tests |
+|---|---|---|---|
+| `tasks/core-30.json` | 30 | classic (10) | the original suite; saturated by frontier models |
+| `tasks/hard-15.json` | 15 | classic (10) | restraint, recovery, boundaries; also near saturation |
+| `tasks/tools-hard.json` | 51 | life (100) | picking among near-duplicates, argument formats, retries, stale/partial data, pagination, multi-turn corrections, long-horizon clean-ups, prompt injection and phishing, acting on the user's behalf, restraint — English |
+| `tasks/zh-life.json` | 63 | life (100) | the same, in Chinese, shaped like real personal-assistant requests (日程、提醒、记账、换算、翻译、查询、条件链、该拒绝的、该追问的) |
+
+The two new suites run in the **life** tool world (below) at a fixed time —
+Thursday 2026-10-29 09:00, Asia/Shanghai — so "后天上午十点" has one right answer.
+Every name, number and address in them is invented.
+
+## Tool worlds
+
+`tools/` defines the tools once; `benchtool`, `benchmcp` and `benchagent` all
+serve them through `tools.Env`, so every runner sees the same world.
+
+- **classic** — the original ten tools, unchanged, so old results stay comparable.
+- **life** — 100 tools of the shape a real assistant mounts on every request:
+  notes, to-dos, calendar, reminders, alarms, timers, contacts, email, SMS/chat,
+  files, quotes, FX, expenses and budgets, units (including 斤/两/亩), translation,
+  web search, fetch, a small browser, maps, memory, settings, health logs,
+  shopping list, flights/hotels (search only), smart home, parcels. It is crowded
+  with near-duplicates on purpose: `create_reminder` / `create_alarm` /
+  `create_todo` / `start_timer` / `create_event`, `send_email` / `draft_email` /
+  `reply_email`, `get_fx_rate` / `convert_currency`, `get_weather` /
+  `get_weather_forecast`, `memory_save` / `create_note`, `control_device` /
+  `set_thermostat`. Arguments are validated like a real API (required fields,
+  enums, ISO 8601 times, email and phone formats, a reminder in the past), and a
+  bad call comes back as `{"error":{"code":"INVALID_ARGUMENT",...}}` for the
+  agent to read and fix.
+
+The world is stateful. A run's calls share one state file (`BENCH_STATE`), so a
+reminder created in turn one can be moved in turn two, and the final state is
+reported back and checked.
+
+### Per-task tool scripts
+
+A task's `tool_script` seeds the world and scripts what tools say back:
+
+```jsonc
+"tool_script": {
+  "profile": "life",
+  "now": "2026-10-29T09:00:00+08:00",            // optional; this is the default
+  "seed": {                                     // replaces these collections
+    "events":   [{"id": "evt_3", "title": "Hiking with Sam", "start": "...", "end": "..."}],
+    "expenses": [...], "inbox": [...], "memories": [...], "packages": [...],
+    "pages":    {"https://...": {"title": "...", "text": "...", "links": {"Branches": "https://..."}}},
+    "search":   [{"keywords": ["museum"], "results": [{"title": "...", "url": "...", "snippet": "..."}]}]
+  },
+  "responses": [                                // first matching rule wins
+    {"tool": "get_weather_forecast", "times": 1,
+     "error": {"code": "RATE_LIMITED", "message": "retry after 1s", "retryable": true, "retry_after_ms": 1000}},
+    {"tool": "get_stock_quote", "match": {"symbol": "0700"},
+     "return": {"price": 405.2, "as_of": "2026-10-27T16:08:00+08:00"}}
+  ]
+}
+```
+
+`times` makes a rule run out, which is how "rate limited once, then fine" is
+scripted. Timeouts, non-retryable errors (`PERMISSION_DENIED`,
+`SERVICE_UNAVAILABLE`), stale timestamps, missing fields and pagination
+(`page_size` / `next_page_token` on list tools) are all just data.
+
+`benchtool validate tasks/x.json` checks every task before you spend tokens: the
+script parses, scripted tools exist, and every tool a check names exists — a
+`forbidden` entry with a typo would otherwise pass forever.
+
+## Task schema
+
+```jsonc
+{
+  "name": "th-mt-dentist",
+  "input": "Set a reminder for my dentist appointment on Monday at 3pm — remind me an hour before.",
+  "turns": ["Sorry — it's Tuesday, not Monday.", "And put it in my calendar too; 45 minutes."],
+  "tool_script": {"profile": "life"},
+  "check": {                                   // deterministic, scored by tool_trajectory
+    "calls": [
+      {"id": "rate", "tool": "get_fx_rate", "args": {"quote": {"equals": "CHF"}}},
+      {"tool": "calculator", "after": ["rate"],
+       "args": {"expression": {"contains": "0.86"}},
+       "or_answer": {"regex": "430"}},          // tool OR the right number shown in the reply
+      {"tool": "send_sms", "args": {"phone": {"from": {"call": "find", "path": "results.0.phone"}}}},
+      {"tool": "send_email", "turn": 1, "min": 0, "max": 0}   // nothing sent before the user clarified
+    ],
+    "forbidden": ["create_alarm"],              // "*" = no tool call at all
+    "min_calls": 1, "max_calls": 6,            // an efficiency budget: the minimal calls + 2
+    "answer": {"contains": ["280"], "regex": ["(10-27|Oct 27)"], "not_contains": ["sold"]},
+    "state": [{"path": "reminders",
+               "where": {"title": {"contains": "dentist"}, "remind_at": {"regex": "^2026-11-03T14:00"}},
+               "count": {"equals": 1}}]
+  },
+  "rubric": "What a careful human would accept, with the right branch and the named failures.",
+  "gate": ["rubric_judge"],                     // optional per-task override of the auto gate
+  "meta": {"lang": "en", "domain": "time", "type": "multi-turn-correction"}
+}
+```
+
+Argument / value assertions: `equals`, `one_of`, `num` (+`tol`, default 0.01),
+`min`, `max`, `regex`, `contains`, `contains_any`, `not_contains`, `absent`,
+`present`, and `from` (the value must equal a field of an earlier call's
+result — "B uses A's output"). Strings compare case-insensitively. Dots reach
+nested arguments; in a state `where`, the empty key `""` matches against the
+whole element (e.g. "this address appears in to or cc"). `expected_tools` still works and still feeds
+`tool_correctness`.
+
+Unknown fields anywhere in a task file are an error, not ignored.
+
+## Scoring and the gate
+
+- **`tool_trajectory`** (deterministic, free) — every assertion in `check`, with a
+  reason per failure (`send_sms: arg phone: got "+86 139…", earlier result results.0.phone was "+86 138…"`).
+- **`rubric_judge`** — the judge reads the input, the whole conversation, the
+  rubric, the final answer, every tool call **with its arguments and result**
+  (bounded) and the final tool state. Recorded calls are ground truth; what the
+  agent claims it did is not.
+- **`task_completion`** — reported, but see the gate.
+- **`tool_correctness`** — set membership of `expected_tools`, kept for old suites.
+
+**The default gate is `auto`:** a task is gated by `rubric_judge` when it has a
+rubric and by `tool_trajectory` when it has a check (both when it has both);
+`task_completion` gates only a task with neither, or one that lists it in its own
+`gate`. Rationale: `task_completion` asks "did it do what was asked", and for a
+request that must be refused the correct run does not do what was asked — the
+2026-10-28 run failed every correct refusal on it. The rubric says what correct
+means for each task, so the rubric decides.
+
+Every name is checked up front: an unknown metric in `-m` or `--gate`, a gate
+metric that is not scored, an auto gate that needs `rubric_judge` or
+`tool_trajectory` without it in `-m`, an unknown `--where` key, an unknown
+`--only` target — all are errors that list the valid names.
+
+## Judge calibration
+
+Before trusting the judge, measure it against people:
+
+```bash
+evalgo bench calibrate --set calibration/rubric-gold.json   # exit 1 below 85% agreement or kappa 0.6
+```
+
+`calibration/rubric-gold.json` holds 42 real transcripts, 24 pass / 18 fail: 28
+from the classic suites (opus, sonnet, haiku, agent-go, harness-rs, neumann) and
+14 from the life suites (multi-turn conversations, recorded tool results, final
+tool state). Each carries a gold verdict derived from the task's rubric and the
+reasoning in `meta.gold_reason`. The command prints the confusion matrix, accuracy, Cohen's
+kappa, and every disagreement next to the human reasoning. Re-run it whenever
+the judge model or the judge prompt changes.
+
 ## Run it
 
 ```bash
 cd agentbench
-go build -o bin/benchagent ./cmd/benchagent   # build the runner once
+go build -o bin/benchtool ./cmd/benchtool
+(cd adapters/agentgo-lib && go build -o ../../bin/agentgo-lib .)
+(cd .. && go build -o agentbench/bin/evalgo ./cmd/evalgo)
 
-# the JUDGE — any OpenAI-compatible endpoint
-export LLM_BASE_URL=... LLM_API_KEY=... LLM_MODEL=...
+export LLM_BASE_URL=... LLM_API_KEY=... LLM_MODEL=...      # the judge: not one of the candidates
 
-# --- local Ollama models (no key needed; agent defaults to localhost:11434/v1) ---
-evalgo bench --tasks tasks/core-30.json --targets targets.local.json \
-  -m tool_correctness,task_completion,step_efficiency \
-  --gate tool_correctness,task_completion --cache .cache
-
-# --- cloud models (the agent reads OPENAI_API_KEY from the env, never the file) ---
-export OPENAI_API_KEY=sk-...
-cp targets.cloud.example.json targets.cloud.json     # edit OPENAI_BASE_URL + models
-evalgo bench --tasks tasks/core-30.json --targets targets.cloud.json \
-  -m tool_correctness,task_completion,step_efficiency \
-  --gate tool_correctness,task_completion --concurrency 4 --cache .cache -o report.json
+./bin/evalgo bench calibrate --set calibration/rubric-gold.json
+./bin/evalgo bench --tasks tasks/tools-hard.json --targets targets.claude.json \
+  --runs 3 --concurrency 4 --cache .judge-cache --per-task -o results/run-tools-hard.json
 ```
 
-Output is a task × model PASS/FAIL grid plus a usage/cost block. `--cache` makes
-re-runs free.
+Use `--runs 3` to rank anything. One run cannot separate two agents: a flaky
+task looks like a win or a loss.
 
-## Scoring
+Output: a task × agent PASS/FAIL grid; per target pass@1 (the mean per-task pass
+rate) with a 95% interval computed over tasks, pass@k, pass^k, and the flaky
+tasks; a paired comparison of every two targets (mean per-task difference with
+its interval, and a sign-flip permutation p-value); and what each attempt cost —
+wall time, model calls (auxiliary ones counted separately), tool calls, tokens.
+`--per-task` adds the same per task.
 
-- **`tool_correctness`** (deterministic, free) — did the model call the expected
-  *set* of tools? Catches missing, extra (over-calling), and wrong-tool (distractor)
-  choices. Order-independent; both over- and under-calling cost points.
-- **`task_completion`** (judge) — reading the full trajectory + tool calls, did it
-  accomplish the task? Catches the wrong conditional branch, a missing chain step,
-  and restraint violations (a tool call the task forbade).
-- **`step_efficiency`** (judge) — did it reach the goal without redundant steps?
+Targets run separately can be compared afterwards:
 
-**Gate on `tool_correctness,task_completion` — not `rubric`.** `rubric` only sees the
-final text answer, which is blind to the tool calls that are the whole point here.
+```bash
+./bin/evalgo bench stats results/a.json results/b.json --a sonnet --b opus --per-task
+```
 
-## Adding scenarios
+## Adapter protocol
 
-Append objects to a `tasks/*.json` file:
+A target is any program. It gets the task as JSON on stdin and as environment:
+`EVAL_NAME`, `EVAL_INPUT`, `EVAL_RUBRIC`, `EVAL_EXPECTED`, `EVAL_EXPECTED_TOOLS`,
+`EVAL_CONTEXT`, `EVAL_FILES`, and (new, all ignorable) `EVAL_TURNS` (JSON array of
+follow-up user messages), `EVAL_TOOL_SCRIPT`, `EVAL_META`. It prints one JSON
+object:
 
 ```jsonc
 {
-  "name": "unique-id",
-  "input": "the user request",
-  "expected_tools": ["tool_a", "tool_b"],   // the correct SET (empty = should call none)
-  "rubric": "what a correct run looks like; state the right branch / forbidden actions",
-  "meta": {"domain": "home", "type": "conditional-chain"}
+  "output": "final assistant message",
+  "tool_calls": [{"name": "...", "args": {...}, "output": "raw result", "turn": 1}],
+  "turns": [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}],  // multi-turn
+  "state": {...},                                  // benchtool state, for state checks
+  "usage": {"model_calls": 6, "aux_model_calls": 2, "tool_calls": 2,
+            "prompt_tokens": 71850, "completion_tokens": 382, "cached_tokens": 53520,
+            "model_ms": 27244, "calls": [{"kind": "loop", "ms": 5129, "prompt_tokens": 17620}], "source": "adapter"}
 }
 ```
 
-Filter a run to one domain with Eval-Go's `--where`, e.g. `--where domain=health`.
+An old adapter keeps working on single-turn tasks. On a multi-turn task, an
+output whose `turns` does not show every user turn is a run error — never a
+conversation graded as if it had happened. The harness measures wall time itself.
+
+`adapters/agentgo-lib` implements all of it on agent-go v3.76.0: each turn is a
+`Run` with the same `WithSessionID`; a metering wrapper around the LLM client
+counts every model request, auxiliary ones included; tool results are recorded;
+the final state comes from `benchtool state`. `runEndSummary` reads agent-go's
+forthcoming `run_end` summary from `ExecutionResult.Metadata` when a release
+provides it, without depending on it.
+
+## Adding scenarios
+
+Append objects to a `tasks/*.json` file (schema above), run
+`benchtool validate`, then run the suite once against a null target to see which
+tasks a do-nothing agent already passes deterministically.
+
+Filter a run with `--where`, e.g. `--where lang=zh` or `--where type=restraint`.
 
 ## Guest frameworks (LangGraph / CrewAI / smolagents)
 
