@@ -257,7 +257,8 @@ func toSet(items []string) map[string]struct{} {
 const (
 	judgeMaxCallOutput = 600   // runes of one tool result shown to the judge
 	judgeMaxToolText   = 14000 // runes of all tool calls together
-	judgeMaxStateText  = 4000  // runes of the final tool state
+	judgeMaxStateText  = 8000  // runes of the final tool state
+	judgeMaxStateKey   = 1500  // runes of one top-level state collection
 )
 
 // formatToolCalls renders tool calls as "1. name({json args}) -> result" for a

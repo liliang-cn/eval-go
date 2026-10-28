@@ -73,12 +73,28 @@ func toolCallsOrNone(calls []ToolCall) string {
 }
 
 // stateBlock shows the judge the tool environment's final state, when the
-// target reported one: for "move it to 8pm" the state is the outcome.
+// target reported one: for "move it to 8pm" the state is the outcome. Each
+// top-level collection is clipped on its own, so a long address book cannot
+// push the reminders the task is about out of the judge's view.
 func stateBlock(s Sample) string {
 	if len(s.State) == 0 {
 		return ""
 	}
-	return "\nFINAL TOOL STATE (recorded by the harness):\n" + clipRunes(string(s.State), judgeMaxStateText) + "\n"
+	var obj map[string]json.RawMessage
+	if json.Unmarshal(s.State, &obj) != nil {
+		return "\nFINAL TOOL STATE (recorded by the harness):\n" + clipRunes(string(s.State), judgeMaxStateText) + "\n"
+	}
+	var b strings.Builder
+	b.WriteString("\nFINAL TOOL STATE (recorded by the harness):\n")
+	for _, k := range sortedKeys(obj) {
+		line := fmt.Sprintf("%s: %s\n", k, clipRunes(string(obj[k]), judgeMaxStateKey))
+		if b.Len()+len(line) > judgeMaxStateText {
+			b.WriteString("... (more state not shown)\n")
+			break
+		}
+		b.WriteString(line)
+	}
+	return b.String()
 }
 
 // callVerdict runs a judge prompt and parses a {passed,score,reason} verdict.

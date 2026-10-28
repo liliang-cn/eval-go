@@ -166,3 +166,19 @@ func TestToolCheckValidate(t *testing.T) {
 		}
 	}
 }
+
+func TestJudgePromptKeepsSmallStateNextToLargeState(t *testing.T) {
+	big := strings.Repeat(`{"name":"someone","phone":"+86 000"},`, 400)
+	s := Sample{State: json.RawMessage(`{"contacts":[` + strings.TrimSuffix(big, ",") + `],"reminders":[{"title":"Call Mom","remind_at":"2026-10-30T20:00"}]}`)}
+	block := stateBlock(s)
+	if !strings.Contains(block, "Call Mom") {
+		t.Fatalf("the reminders must survive a long contacts list:\n%s", block[:200])
+	}
+	calls := make([]ToolCall, 100)
+	for i := range calls {
+		calls[i] = ToolCall{Name: "web_search", Output: strings.Repeat("x", 5000)}
+	}
+	if n := len(formatToolCalls(calls)); n > judgeMaxToolText+200 {
+		t.Fatalf("tool-call block not bounded: %d", n)
+	}
+}
